@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">JanusSDK Example</string>
+    <string name="title_activity_full_example">Janus SDK Full Example</string>
+</resources>
