@@ -3,6 +3,14 @@
 
 ### Installation
 
+Add the JanusSDK maven repository to your project's `build.gradle.kts` file:
+
+```kotlin
+maven {
+    url = uri("https://ethyca.github.io/janus-sdk-android")
+}
+```
+
 #### Gradle (Kotlin DSL)
 
 Add the JanusSDK dependency to your app's `build.gradle.kts` file:
@@ -10,6 +18,21 @@ Add the JanusSDK dependency to your app's `build.gradle.kts` file:
 ```kotlin
 dependencies {
     implementation("com.ethyca.janussdk:android:1.0.0")
+}
+```
+
+If you are using a `libs.versions.toml` file, add the following entry:
+
+```toml
+[libraries]
+janus-sdk = { module = "com.ethyca.janussdk:android", version = "1.0.0" }
+```
+
+Then in your `build.gradle.kts`:
+
+```kotlin
+dependencies {
+    implementation(libs.janus.sdk)
 }
 ```
 
