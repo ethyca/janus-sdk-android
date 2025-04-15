@@ -33,13 +33,13 @@
             android:padding="16dp">
 
             <ImageView
-                android:layout_width="64dp"
-                android:layout_height="64dp"
+                android:layout_width="48dp"
+                android:layout_height="24dp"
                 android:layout_gravity="center_horizontal"
                 android:layout_marginTop="16dp"
                 android:layout_marginBottom="16dp"
-                android:src="@drawable/ic_launcher_foreground"
-                android:contentDescription="Janus SDK Logo" />
+                android:src="@drawable/fides_logo"
+                android:contentDescription="Fides Logo" />
 
             <TextView
                 android:layout_width="wrap_content"

@@ -2,18 +2,31 @@ package com.ethyca.janussdk.android.example
 
 import android.content.Context
 import android.content.Intent
+import android.graphics.Color
 import android.os.Bundle
 import android.view.MenuItem
 import android.view.View
+import android.view.ViewGroup
+import android.webkit.WebView
+import android.webkit.WebViewClient
+import android.widget.Button
+import android.widget.FrameLayout
+import android.widget.ProgressBar
+import android.widget.Switch
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.ethyca.janussdk.android.example.databinding.ActivityFullExampleBinding
+import androidx.recyclerview.widget.RecyclerView
+import com.ethyca.janussdk.android.Janus
+import com.ethyca.janussdk.android.webview.WebViewManager
 import java.text.SimpleDateFormat
 import java.util.*
+import com.ethyca.janussdk.android.example.databinding.ActivityFullExampleBinding
+import com.ethyca.janussdk.android.example.WebViewActivity
 
 class FullExampleActivity : AppCompatActivity() {
     
@@ -21,6 +34,14 @@ class FullExampleActivity : AppCompatActivity() {
     private val janusManager: JanusManager = JanusManager.getInstance()
     private lateinit var consentValueAdapter: ConsentValueAdapter
     private val dateFormat = SimpleDateFormat("MM/dd/yyyy, h:mm a", Locale.US)
+    
+    // Add these variables for WebView management
+    private var webView: WebView? = null
+    private var webViewContainer: FrameLayout? = null
+    private var progressBar: ProgressBar? = null
+    private var autoSyncSwitch: Switch? = null
+    private val backgroundWebViews: MutableList<WebView> = mutableListOf()
+    private var webViewVisible = false
     
     companion object {
         fun createIntent(context: Context): Intent {
@@ -30,22 +51,24 @@ class FullExampleActivity : AppCompatActivity() {
     
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        
         binding = ActivityFullExampleBinding.inflate(layoutInflater)
         setContentView(binding.root)
         
-        // Setup the action bar with a back button
+        // Set up toolbar
         setSupportActionBar(binding.toolbar)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         
-        // Setup the UI
-        setupUI()
+        // Initialize UI elements
+        initializeUI()
         
-        // Observe the JanusManager state
+        // Initialize WebView controls
+        initializeWebViewControls()
+        
+        // Observe Janus state
         observeJanusState()
     }
     
-    private fun setupUI() {
+    private fun initializeUI() {
         // Setup RecyclerView for consent values
         consentValueAdapter = ConsentValueAdapter()
         binding.consentValuesRecyclerView.apply {
@@ -71,6 +94,29 @@ class FullExampleActivity : AppCompatActivity() {
                 showToast("Failed to copy privacy experience")
             }
         }
+    }
+    
+    private fun initializeWebViewControls() {
+        // Initialize WebView container and controls
+        webViewContainer = binding.webViewContainer
+        progressBar = binding.progressBar
+        autoSyncSwitch = binding.autoSyncSwitch
+
+        // Set up buttons
+        binding.showWebViewButton.setOnClickListener {
+            showWebView()
+        }
+        
+        binding.addBackgroundWebViewButton.setOnClickListener {
+            addBackgroundWebView()
+        }
+        
+        binding.clearBackgroundWebViewsButton.setOnClickListener {
+            removeAllBackgroundWebViews()
+        }
+        
+        // Update the background WebView count display
+        updateBackgroundWebViewCount()
     }
     
     private fun observeJanusState() {
@@ -166,11 +212,108 @@ class FullExampleActivity : AppCompatActivity() {
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
     }
     
+    /**
+     * Creates and displays a WebView in a new activity that takes up the full screen
+     */
+    private fun showWebView() {
+        // Get auto-sync setting from the toggle
+        val autoSyncOnStart = autoSyncSwitch?.isChecked ?: true
+        
+        // Create intent for WebViewActivity
+        val intent = Intent(this, WebViewActivity::class.java).apply {
+            // Pass URL to load
+            putExtra(WebViewActivity.EXTRA_WEBSITE_URL, janusManager.websiteURL)
+            // Pass auto-sync option
+            putExtra(WebViewActivity.EXTRA_AUTO_SYNC, autoSyncOnStart)
+        }
+        
+        // Launch the activity
+        startActivity(intent)
+        
+        Toast.makeText(this, "Launching WebView with autoSync=$autoSyncOnStart", Toast.LENGTH_SHORT).show()
+    }
+    
+    /**
+     * WebView is now managed in WebViewActivity, so this method is no longer needed
+     */
+    private fun closeWebView() {
+        // No longer needed as WebView is in a separate activity
+        Toast.makeText(this, "WebView is managed by WebViewActivity", Toast.LENGTH_SHORT).show()
+    }
+    
+    /**
+     * Creates a background WebView that's not shown to the user
+     */
+    private fun addBackgroundWebView() {
+        // Get autoSync value from the toggle
+        val autoSyncOnStart = autoSyncSwitch?.isChecked ?: true
+        
+        // Create a WebView that won't be shown on screen
+        val backgroundWebView = WebViewManager.createConsentWebView(
+            context = this,
+            autoSyncOnStart = autoSyncOnStart
+        )
+        
+        // Add to our list of background WebViews
+        backgroundWebViews.add(backgroundWebView)
+        
+        // Load the website URL
+        backgroundWebView.loadUrl(janusManager.websiteURL)
+        
+        // Update the displayed count
+        updateBackgroundWebViewCount()
+        
+        Toast.makeText(
+            this, 
+            "Background WebView added (total: ${backgroundWebViews.size})", 
+            Toast.LENGTH_SHORT
+        ).show()
+    }
+    
+    /**
+     * Updates the text showing how many background WebViews exist
+     */
+    private fun updateBackgroundWebViewCount() {
+        val countTextView = binding.backgroundWebViewCount
+        countTextView.text = "Background WebViews: ${backgroundWebViews.size}"
+    }
+    
+    /**
+     * Removes all background WebViews
+     */
+    private fun removeAllBackgroundWebViews() {
+        // Release each WebView
+        for (backgroundWebView in backgroundWebViews) {
+            WebViewManager.releaseConsentWebView(backgroundWebView)
+        }
+        
+        // Clear the list
+        backgroundWebViews.clear()
+        
+        // Update the display
+        updateBackgroundWebViewCount()
+        
+        Toast.makeText(this, "All background WebViews removed", Toast.LENGTH_SHORT).show()
+    }
+    
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         if (item.itemId == android.R.id.home) {
             finish()
             return true
         }
         return super.onOptionsItemSelected(item)
+    }
+    
+    override fun onDestroy() {
+        super.onDestroy()
+        
+        // Clean up the foreground WebView
+        webView?.let {
+            WebViewManager.releaseConsentWebView(it)
+            webView = null
+        }
+        
+        // Clean up all background WebViews
+        removeAllBackgroundWebViews()
     }
 } 

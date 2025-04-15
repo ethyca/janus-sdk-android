@@ -17,15 +17,17 @@ Add the JanusSDK dependency to your app's `build.gradle.kts` file:
 
 ```kotlin
 dependencies {
-    implementation("com.ethyca.janussdk:android:1.0.0")
+    implementation("com.ethyca.janussdk:android:1.0.1")
 }
 ```
 
+
+jlkjsl;j;lkdfjgfd 
 If you are using a `libs.versions.toml` file, add the following entry:
 
 ```toml
 [libraries]
-janus-sdk = { module = "com.ethyca.janussdk:android", version = "1.0.0" }
+janus-sdk = { module = "com.ethyca.janussdk:android", version = "1.0.1" }
 ```
 
 Then in your `build.gradle.kts`:
@@ -40,7 +42,7 @@ dependencies {
 
 ```groovy
 dependencies {
-    implementation 'com.ethyca.janussdk:android:1.0.0'
+    implementation 'com.ethyca.janussdk:android:1.0.1'
 }
 ```
 

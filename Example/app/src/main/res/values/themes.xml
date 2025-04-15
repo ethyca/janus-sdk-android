@@ -2,10 +2,26 @@
     <!-- Base application theme. -->
     <style name="Base.Theme.JanusSDKExample" parent="Theme.Material3.DayNight.NoActionBar">
         <!-- Customize your light theme here. -->
-        <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
+        <item name="colorPrimary">@color/primary_color</item>
+        <item name="colorPrimaryVariant">@color/primary_variant_color</item>
+        <item name="colorOnPrimary">@color/white</item>
+        <item name="android:statusBarColor">?attr/colorPrimaryVariant</item>
+        
+        <!-- Set corner radius for all buttons -->
+        <item name="materialButtonStyle">@style/Widget.App.Button</item>
+        <item name="materialButtonOutlinedStyle">@style/Widget.App.Button.OutlinedButton</item>
     </style>
 
     <style name="Theme.JanusSDKExample" parent="Base.Theme.JanusSDKExample" />
+    
+    <!-- Button styles with 8dp corner radius -->
+    <style name="Widget.App.Button" parent="Widget.Material3.Button">
+        <item name="cornerRadius">8dp</item>
+    </style>
+    
+    <style name="Widget.App.Button.OutlinedButton" parent="Widget.Material3.Button.OutlinedButton">
+        <item name="cornerRadius">8dp</item>
+    </style>
     
     <!-- Styles for AppBar -->
     <style name="Theme.Example.AppBarOverlay" parent="ThemeOverlay.Material3.Dark.ActionBar" />

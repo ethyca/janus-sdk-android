@@ -36,6 +36,17 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".MainActivity" />
         </activity>
+        
+        <activity
+            android:name=".WebViewActivity"
+            android:exported="false"
+            android:label="WebView"
+            android:parentActivityName=".FullExampleActivity"
+            android:theme="@style/Theme.JanusSDKExample">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".FullExampleActivity" />
+        </activity>
     </application>
 
 </manifest>
