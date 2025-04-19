@@ -79,7 +79,9 @@ The main entry point for integrating consent management capabilities is the Janu
 - `consentMetadata`: An object containing metadata about the consent, including:
   - `createdAt`: A timestamp indicating when the consent was created.
   - `updatedAt`: A timestamp indicating when the consent was last updated.
+  - `consentMethod`: A string indicating how the consent was provided (e.g., "save", "dismiss").
 - `fides_string`: The user's current consent string(s) combined into a single value.
+- `clearConsent(clearMetadata)`: Clears all consent data. The optional `clearMetadata` parameter (default: false) determines whether to also clear consent metadata.
 
 **Janus Configuration Options
 - `apiHost`:  🌎 Fides base URL

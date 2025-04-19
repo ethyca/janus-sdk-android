@@ -97,6 +97,17 @@ class JanusManager : ViewModel() {
             _shouldShowExperience.value = false
             _currentExperience.value = null
         }
+
+        // TODO: Kotlin DSL is not working, so we're using the builder pattern for now
+        // TODO: Add support for Kotlin DSL - kotlin metadata is not being included in the AAR
+        // // Create the JanusConfiguration
+        // val janusConfig = JanusConfiguration {
+        //     apiHost = config.apiHost
+        //     propertyId = config.propertyId ?: ""
+        //     ipLocation = config.region == null
+        //     region = config.region
+        //     webHost = config.website
+        // }
         
         // Create the JanusConfiguration using the builder pattern
         val janusConfig = JanusConfiguration.Builder()
