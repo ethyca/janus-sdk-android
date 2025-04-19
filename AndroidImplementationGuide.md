@@ -17,7 +17,7 @@ Add the JanusSDK dependency to your app's `build.gradle.kts` file:
 
 ```kotlin
 dependencies {
-    implementation("com.ethyca.janussdk:android:1.0.3")
+    implementation("com.ethyca.janussdk:android:1.0.4")
 }
 ```
 
@@ -25,7 +25,7 @@ If you are using a `libs.versions.toml` file, add the following entry:
 
 ```toml
 [libraries]
-janus-sdk = { module = "com.ethyca.janussdk:android", version = "1.0.3" }
+janus-sdk = { module = "com.ethyca.janussdk:android", version = "1.0.4" }
 ```
 
 Then in your `build.gradle.kts`:
@@ -40,7 +40,7 @@ dependencies {
 
 ```groovy
 dependencies {
-    implementation 'com.ethyca.janussdk:android:1.0.3'
+    implementation 'com.ethyca.janussdk:android:1.0.4'
 }
 ```
 
@@ -87,7 +87,6 @@ class MainActivity : AppCompatActivity() {
             .ipLocation(true)
             .region("US-CA")
             .fidesEvents(true)
-            .webHost("https://yourhost.com")
             .build()
         
         // Initialize Janus with the activity reference
@@ -107,7 +106,6 @@ class MainActivity : AppCompatActivity() {
                                 .ipLocation(false)
                                 .region(selectedRegion)
                                 .fidesEvents(config.fidesEvents)
-                                .webHost(config.webHost)
                                 .build()
                             Janus.initialize(activity, newConfig) { /* handle result */ }
                         }
@@ -166,7 +164,6 @@ val config = JanusConfiguration.Builder()
     .ipLocation(true)                                // 📍 Use IP-based geolocation
     .region("US-CA")                                 // 🌎 Provide if geolocation is false or fails
     .fidesEvents(true)                               // 🔄 Map JanusEvents to FidesJS events in WebViews
-    .webHost("https://yourhost.com")                 // 🇪🇺 Required for TCF (optional for non-TCF)
     .build()
 
 // Initialize with an Activity reference

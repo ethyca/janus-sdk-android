@@ -106,7 +106,6 @@ class JanusManager : ViewModel() {
         //     propertyId = config.propertyId ?: ""
         //     ipLocation = config.region == null
         //     region = config.region
-        //     webHost = config.website
         // }
         
         // Create the JanusConfiguration using the builder pattern
@@ -115,7 +114,6 @@ class JanusManager : ViewModel() {
             .propertyId(config.propertyId ?: "")
             .ipLocation(config.region == null) // Only use IP location if no region is provided
             .region(config.region)
-            .webHost(config.website)
             .build()
         
         try {
