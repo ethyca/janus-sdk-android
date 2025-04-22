@@ -40,6 +40,9 @@ class WebViewActivity : AppCompatActivity() {
         
         // Set up toolbar
         setupToolbar()
+
+        // Enable WebView debugging
+        WebView.setWebContentsDebuggingEnabled(true)
         
         // Initialize and display the WebView
         initializeWebView()

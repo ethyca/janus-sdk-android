@@ -17,7 +17,7 @@ Add the JanusSDK dependency to your app's `build.gradle.kts` file:
 
 ```kotlin
 dependencies {
-    implementation("com.ethyca.janussdk:android:1.0.4")
+    implementation("com.ethyca.janussdk:android:1.0.5")
 }
 ```
 
@@ -25,7 +25,7 @@ If you are using a `libs.versions.toml` file, add the following entry:
 
 ```toml
 [libraries]
-janus-sdk = { module = "com.ethyca.janussdk:android", version = "1.0.4" }
+janus-sdk = { module = "com.ethyca.janussdk:android", version = "1.0.5" }
 ```
 
 Then in your `build.gradle.kts`:
@@ -40,7 +40,7 @@ dependencies {
 
 ```groovy
 dependencies {
-    implementation 'com.ethyca.janussdk:android:1.0.4'
+    implementation 'com.ethyca.janussdk:android:1.0.5'
 }
 ```
 
@@ -238,6 +238,26 @@ override fun onDestroy() {
 ```
 
 ⚠️ **Important:** Always call `releaseConsentWebView()` when you're done with a WebView to prevent memory leaks. WebView's JavaScript interfaces require explicit cleanup, and failing to release the WebView properly can lead to resource issues.
+
+⚠️ **WebViewClient Warning:**
+If you need to implement your own WebViewClient on a WebView created by Janus, you must ensure that the onPageFinished() method from the original client is still called.
+Janus injects critical JavaScript after each page load — overriding the WebViewClient without preserving this behavior will break consent synchronization.
+✅ To safely implement a custom client, use the following pattern:
+
+```kotlin
+val webView = Janus.createConsentWebView(context)
+
+// Store a reference to the original Janus WebViewClient before replacing it
+val originalWebViewClient = webView.webViewClient
+
+// Set your custom WebViewClient that delegates to the original one
+webView.webViewClient = object : WebViewClient() {
+    override fun onPageFinished(view: WebView?, url: String?) {
+        // Call the original Janus WebViewClient for this event
+        originalWebViewClient.onPageFinished(view, url)
+    }
+}
+```
 
 ### Jetpack Compose Integration
 

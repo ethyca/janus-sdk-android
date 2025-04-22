@@ -27,7 +27,6 @@ val config = JanusConfiguration.Builder()
     .apiHost("https://your-api-host.com")
     .propertyId("your-property-id")
     .region("US-CA") // Optional - if not provided, IP geolocation will be used
-    .webHost("https://your-website.com")
     .build()
 
 Janus.initialize(context, config) { success, error ->
