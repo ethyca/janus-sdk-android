@@ -7,8 +7,8 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import android.webkit.WebView
-import com.ethyca.janussdk.android.webview.WebViewManager
 import androidx.activity.OnBackPressedCallback
+import com.ethyca.janussdk.android.Janus
 
 /**
  * Activity for displaying a full-screen WebView with Janus SDK integration
@@ -98,11 +98,8 @@ class WebViewActivity : AppCompatActivity() {
     }
     
     private fun initializeWebView() {
-        // Create WebView using the WebViewManager
-        val consentWebView = WebViewManager.createConsentWebView(
-            context = this,
-            autoSyncOnStart = autoSyncOnStart
-        )
+        // Create WebView using Janus
+        val consentWebView = Janus.createConsentWebView(this, autoSyncOnStart)
         
         // Store reference
         webView = consentWebView
@@ -132,7 +129,7 @@ class WebViewActivity : AppCompatActivity() {
     
     private fun releaseWebView() {
         webView?.let {
-            WebViewManager.releaseConsentWebView(it)
+            Janus.releaseConsentWebView(it)
             webView = null
         }
     }

@@ -15,18 +15,13 @@ import android.widget.ProgressBar
 import android.widget.Switch
 import android.widget.TextView
 import android.widget.Toast
-import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
-import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import com.ethyca.janussdk.android.Janus
-import com.ethyca.janussdk.android.webview.WebViewManager
 import java.text.SimpleDateFormat
 import java.util.*
 import com.ethyca.janussdk.android.example.databinding.ActivityFullExampleBinding
-import com.ethyca.janussdk.android.example.WebViewActivity
 
 class FullExampleActivity : AppCompatActivity() {
     
@@ -249,10 +244,7 @@ class FullExampleActivity : AppCompatActivity() {
         val autoSyncOnStart = autoSyncSwitch?.isChecked ?: true
         
         // Create a WebView that won't be shown on screen
-        val backgroundWebView = WebViewManager.createConsentWebView(
-            context = this,
-            autoSyncOnStart = autoSyncOnStart
-        )
+        val backgroundWebView = Janus.createConsentWebView(this, autoSyncOnStart)
         
         // Add to our list of background WebViews
         backgroundWebViews.add(backgroundWebView)
@@ -284,7 +276,7 @@ class FullExampleActivity : AppCompatActivity() {
     private fun removeAllBackgroundWebViews() {
         // Release each WebView
         for (backgroundWebView in backgroundWebViews) {
-            WebViewManager.releaseConsentWebView(backgroundWebView)
+            Janus.releaseConsentWebView(backgroundWebView)
         }
         
         // Clear the list
@@ -309,7 +301,7 @@ class FullExampleActivity : AppCompatActivity() {
         
         // Clean up the foreground WebView
         webView?.let {
-            WebViewManager.releaseConsentWebView(it)
+            Janus.releaseConsentWebView(it)
             webView = null
         }
         
