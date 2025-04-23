@@ -8,7 +8,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.ethyca.janussdk.android.Janus
 import com.ethyca.janussdk.android.JanusConfiguration
-import com.ethyca.janussdk.android.JanusEventType
+import com.ethyca.janussdk.android.events.JanusEventType
 import com.ethyca.janussdk.android.consent.ConsentMetadata
 import java.util.*
 import android.app.Activity
