@@ -17,7 +17,7 @@ Add the JanusSDK dependency to your app's `build.gradle.kts` file:
 
 ```kotlin
 dependencies {
-    implementation("com.ethyca.janussdk:android:1.0.7")
+    implementation("com.ethyca.janussdk:android:1.0.8")
 }
 ```
 
@@ -25,7 +25,7 @@ If you are using a `libs.versions.toml` file, add the following entry:
 
 ```toml
 [libraries]
-janus-sdk = { module = "com.ethyca.janussdk:android", version = "1.0.7" }
+janus-sdk = { module = "com.ethyca.janussdk:android", version = "1.0.8" }
 ```
 
 Then in your `build.gradle.kts`:
@@ -40,7 +40,7 @@ dependencies {
 
 ```groovy
 dependencies {
-    implementation 'com.ethyca.janussdk:android:1.0.7'
+    implementation 'com.ethyca.janussdk:android:1.0.8'
 }
 ```
 
@@ -219,6 +219,47 @@ val consent = Janus.consent
 // Get Fides string (List of IAB strings like CPzHq4APzHq4AAMABBENAUEAALAAAEOAAAAAAEAEACACAAAA,1~61.70)
 val fidesString = Janus.fidesString
 ```
+
+### Region Detection and Access
+
+JanusSDK provides methods to work directly with region detection and access the current region:
+
+```kotlin
+// Get the user's region by IP geolocation
+Janus.getLocationByIPAddress { success, locationData, error ->
+    if (success && locationData != null) {
+        // Use the full location data
+        val isoRegion = locationData.location // Format: "US-CA"
+        val country = locationData.country    // Format: "US"
+        val subRegion = locationData.region   // Format: "CA"
+        val ipAddress = locationData.ip       // Format: "192.168.1.1"
+        
+        // Update UI with region information
+        updateRegionUI(isoRegion)
+    } else if (error != null) {
+        // Handle specific errors
+        when (error) {
+            is JanusError.NetworkError -> showNetworkError()
+            is JanusError.IPLocationFailed -> showLocationDetectionFailed()
+            else -> showGenericError()
+        }
+    }
+}
+
+// Access the current region being used by the SDK (after initialization)
+val currentRegion = Janus.region
+regionTextView.text = "Current Region: $currentRegion"
+```
+
+The `getLocationByIPAddress` method is particularly useful when:
+- You want to show region information to users before showing a privacy experience
+- You need to implement custom region selection UI based on detected region
+- You want to give users the option to correct their detected region
+
+The `region` property returns the region code that the SDK is currently using, which may come from:
+- The region specified in the configuration during initialization
+- The region detected via IP geolocation
+- Empty string if no region has been determined yet
 
 ### WebView Integration
 

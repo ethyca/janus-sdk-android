@@ -52,6 +52,13 @@ class JanusManager : ViewModel() {
     private val _consentMethod = MutableLiveData<String>("")
     val consentMethod: LiveData<String> = _consentMethod
     
+    // Region detection
+    private val _ipDetectedRegion = MutableLiveData<String>("")
+    val ipDetectedRegion: LiveData<String> = _ipDetectedRegion
+    
+    private val _currentRegion = MutableLiveData<String>("")
+    val currentRegion: LiveData<String> = _currentRegion
+    
     // Experience
     private val _hasExperience = MutableLiveData<Boolean>(false)
     val hasExperience: LiveData<Boolean> = _hasExperience
@@ -165,6 +172,7 @@ class JanusManager : ViewModel() {
         _currentExperience.value = try { Janus.currentExperience } catch (e: Exception) { null }
         _fidesString.value = Janus.fidesString
         _consentMethod.value = Janus.consentMetadata.consentMethod
+        _currentRegion.value = Janus.region
     }
     
     /**
@@ -267,6 +275,19 @@ class JanusManager : ViewModel() {
         } catch (e: Exception) {
             println("Error copying experience: ${e.message}")
             return false
+        }
+    }
+    
+    /**
+     * Detect region by IP address
+     */
+    fun detectRegionByIP(callback: (success: Boolean, region: String) -> Unit) {
+        Janus.getLocationByIPAddress { success, locationData, error ->
+            val detectedRegion = locationData?.location ?: ""
+            mainHandler.post {
+                _ipDetectedRegion.value = detectedRegion
+                callback(success, detectedRegion)
+            }
         }
     }
     

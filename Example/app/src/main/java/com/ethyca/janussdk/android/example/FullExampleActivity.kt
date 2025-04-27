@@ -76,6 +76,15 @@ class FullExampleActivity : AppCompatActivity() {
             janusManager.showPrivacyExperience(this)
         }
         
+        // Setup detect region button
+        binding.detectRegionButton.setOnClickListener {
+            binding.ipRegionValueText.text = "Detecting..."
+            janusManager.detectRegionByIP { success, region ->
+                binding.ipRegionValueText.text = if (success && region.isNotEmpty()) 
+                    region else "Detection Failed"
+            }
+        }
+        
         // Setup clear events button
         binding.clearEventsButton.setOnClickListener {
             janusManager.clearEventLog()
@@ -123,6 +132,14 @@ class FullExampleActivity : AppCompatActivity() {
             println("FullExampleActivity: isInitialized updated to: $isInitialized")
             binding.statusCard.visibility = View.VISIBLE
             updateStatusText(binding.statusValueText, isInitialized, "Success ✅", "Not Initialized")
+            
+            // If initialized, show the current region
+            if (isInitialized) {
+                // Get and display the current region being used
+                val currentRegion = Janus.region
+                binding.regionValueText.text = if (currentRegion.isNotEmpty()) 
+                    currentRegion else "Not Detected"
+            }
         }
         
         // Observe has experience
@@ -132,6 +149,16 @@ class FullExampleActivity : AppCompatActivity() {
             binding.copyExperienceButton.visibility = if (hasExperience) View.VISIBLE else View.GONE
             // Enable/disable show experience button based on experience availability
             binding.showExperienceButton.isEnabled = hasExperience
+        }
+        
+        // Observe IP detected region
+        janusManager.ipDetectedRegion.observe(this) { region ->
+            binding.ipRegionValueText.text = if (region.isNotEmpty()) region else "Not Detected"
+        }
+        
+        // Observe current region
+        janusManager.currentRegion.observe(this) { region ->
+            binding.regionValueText.text = if (region.isNotEmpty()) region else "Not Set"
         }
         
         // Observe events

@@ -10,6 +10,7 @@ enum class ConfigurationType {
     ETHYCA,
     ETHYCA_EMPTY,
     COOKIE_HOUSE,
+    COOKIE_HOUSE_NIGHTLY,
     CUSTOM
 }
 
@@ -48,8 +49,16 @@ data class JanusConfig(
                 ConfigurationType.COOKIE_HOUSE ->
                     JanusConfig(
                         type = ConfigurationType.COOKIE_HOUSE,
-                        apiHost = "https://privacy-plus-rc.fides-staging.ethyca.com/",
+                        apiHost = "https://privacy-plus-rc.fides-staging.ethyca.com",
                         website = "https://cookiehouse-plus-rc.fides-staging.ethyca.com",
+                        propertyId = null,
+                        region = null
+                    )
+                ConfigurationType.COOKIE_HOUSE_NIGHTLY ->
+                    JanusConfig(
+                        type = ConfigurationType.COOKIE_HOUSE_NIGHTLY,
+                        apiHost = "https://privacy-plus-nightly.fides-staging.ethyca.com",
+                        website = "https://cookiehouse-plus-nightly.fides-staging.ethyca.com",
                         propertyId = null,
                         region = null
                     )
