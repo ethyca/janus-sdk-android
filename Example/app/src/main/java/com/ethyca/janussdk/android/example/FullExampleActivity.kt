@@ -24,12 +24,12 @@ import java.util.*
 import com.ethyca.janussdk.android.example.databinding.ActivityFullExampleBinding
 
 class FullExampleActivity : AppCompatActivity() {
-    
+
     private lateinit var binding: ActivityFullExampleBinding
     private val janusManager: JanusManager = JanusManager.getInstance()
     private lateinit var consentValueAdapter: ConsentValueAdapter
     private val dateFormat = SimpleDateFormat("MM/dd/yyyy, h:mm a", Locale.US)
-    
+
     // Add these variables for WebView management
     private var webView: WebView? = null
     private var webViewContainer: FrameLayout? = null
@@ -37,32 +37,32 @@ class FullExampleActivity : AppCompatActivity() {
     private var autoSyncSwitch: Switch? = null
     private val backgroundWebViews: MutableList<WebView> = mutableListOf()
     private var webViewVisible = false
-    
+
     companion object {
         fun createIntent(context: Context): Intent {
             return Intent(context, FullExampleActivity::class.java)
         }
     }
-    
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityFullExampleBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        
+
         // Set up toolbar
         setSupportActionBar(binding.toolbar)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
-        
+
         // Initialize UI elements
         initializeUI()
-        
+
         // Initialize WebView controls
         initializeWebViewControls()
-        
+
         // Observe Janus state
         observeJanusState()
     }
-    
+
     private fun initializeUI() {
         // Setup RecyclerView for consent values
         consentValueAdapter = ConsentValueAdapter()
@@ -70,26 +70,26 @@ class FullExampleActivity : AppCompatActivity() {
             layoutManager = LinearLayoutManager(this@FullExampleActivity)
             adapter = consentValueAdapter
         }
-        
+
         // Setup show experience button
         binding.showExperienceButton.setOnClickListener {
             janusManager.showPrivacyExperience(this)
         }
-        
+
         // Setup detect region button
         binding.detectRegionButton.setOnClickListener {
             binding.ipRegionValueText.text = "Detecting..."
             janusManager.detectRegionByIP { success, region ->
-                binding.ipRegionValueText.text = if (success && region.isNotEmpty()) 
+                binding.ipRegionValueText.text = if (success && region.isNotEmpty())
                     region else "Detection Failed"
             }
         }
-        
+
         // Setup clear events button
         binding.clearEventsButton.setOnClickListener {
             janusManager.clearEventLog()
         }
-        
+
         // Setup copy experience button
         binding.copyExperienceButton.setOnClickListener {
             if (janusManager.copyExperienceJSON(this)) {
@@ -99,7 +99,7 @@ class FullExampleActivity : AppCompatActivity() {
             }
         }
     }
-    
+
     private fun initializeWebViewControls() {
         // Initialize WebView container and controls
         webViewContainer = binding.webViewContainer
@@ -110,38 +110,38 @@ class FullExampleActivity : AppCompatActivity() {
         binding.showWebViewButton.setOnClickListener {
             showWebView()
         }
-        
+
         binding.addBackgroundWebViewButton.setOnClickListener {
             addBackgroundWebView()
         }
-        
+
         binding.clearBackgroundWebViewsButton.setOnClickListener {
             removeAllBackgroundWebViews()
         }
-        
+
         // Update the background WebView count display
         updateBackgroundWebViewCount()
     }
-    
+
     private fun observeJanusState() {
         // Debug: Check current value
         println("FullExampleActivity: Current isInitialized value: ${janusManager.isInitialized.value}")
-        
+
         // Observe initialization state
         janusManager.isInitialized.observe(this) { isInitialized ->
             println("FullExampleActivity: isInitialized updated to: $isInitialized")
             binding.statusCard.visibility = View.VISIBLE
             updateStatusText(binding.statusValueText, isInitialized, "Success ✅", "Not Initialized")
-            
+
             // If initialized, show the current region
             if (isInitialized) {
                 // Get and display the current region being used
                 val currentRegion = Janus.region
-                binding.regionValueText.text = if (currentRegion.isNotEmpty()) 
+                binding.regionValueText.text = if (currentRegion.isNotEmpty())
                     currentRegion else "Not Detected"
             }
         }
-        
+
         // Observe has experience
         janusManager.hasExperience.observe(this) { hasExperience ->
             updateStatusText(binding.hasExperienceValueText, hasExperience, "Available ✅", "Not Available ❌")
@@ -150,24 +150,24 @@ class FullExampleActivity : AppCompatActivity() {
             // Enable/disable show experience button based on experience availability
             binding.showExperienceButton.isEnabled = hasExperience
         }
-        
+
         // Observe IP detected region
         janusManager.ipDetectedRegion.observe(this) { region ->
             binding.ipRegionValueText.text = if (region.isNotEmpty()) region else "Not Detected"
         }
-        
+
         // Observe current region
         janusManager.currentRegion.observe(this) { region ->
             binding.regionValueText.text = if (region.isNotEmpty()) region else "Not Set"
         }
-        
+
         // Observe events
         janusManager.events.observe(this) { events ->
             binding.noEventsText.visibility = if (events.isEmpty()) View.VISIBLE else View.GONE
             binding.eventsTextView.visibility = if (events.isEmpty()) View.GONE else View.VISIBLE
             binding.eventsTextView.text = events.joinToString("\n\n")
         }
-        
+
         // Observe consent values
         janusManager.consentValues.observe(this) { consentValues ->
             if (consentValues.isEmpty()) {
@@ -181,19 +181,19 @@ class FullExampleActivity : AppCompatActivity() {
                 consentValueAdapter.updateValues(consentValues)
             }
         }
-        
+
         // Observe fides string
         janusManager.fidesString.observe(this) { fidesString ->
             // Only show fides string container if it has a value
             binding.fidesStringContainer.visibility = if (fidesString.isEmpty()) View.GONE else View.VISIBLE
             binding.fidesStringValueText.text = fidesString
         }
-        
+
         // Observe consent method
         janusManager.consentMethod.observe(this) { consentMethod ->
             binding.consentMethodValueText.text = if (consentMethod.isEmpty()) "Not Set" else consentMethod
         }
-        
+
         // Observe consent metadata timestamps
         janusManager.consentMetadata.observe(this) { metadata ->
             // Format Created timestamp
@@ -203,7 +203,7 @@ class FullExampleActivity : AppCompatActivity() {
                 "Not Set"
             }
             binding.createdValueText.text = createdText
-            
+
             // Format Updated timestamp
             val updatedText = if (metadata.updatedAt != null) {
                 dateFormat.format(metadata.updatedAt!!)
@@ -211,9 +211,16 @@ class FullExampleActivity : AppCompatActivity() {
                 "Not Set"
             }
             binding.updatedValueText.text = updatedText
+
+            // Set version hash
+            binding.versionHashValueText.text = if (metadata.versionHash.isNotEmpty()) {
+                metadata.versionHash
+            } else {
+                "Not Available"
+            }
         }
     }
-    
+
     /**
      * Helper function to update status text with color and emoji indicators
      */
@@ -221,26 +228,26 @@ class FullExampleActivity : AppCompatActivity() {
         textView.text = if (isActive) activeText else inactiveText
         textView.setTextColor(
             ContextCompat.getColor(
-                this, 
+                this,
                 if (isActive) R.color.status_success else R.color.status_error
             )
         )
     }
-    
+
     /**
      * Helper function to show a toast message
      */
     private fun showToast(message: String) {
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
     }
-    
+
     /**
      * Creates and displays a WebView in a new activity that takes up the full screen
      */
     private fun showWebView() {
         // Get auto-sync setting from the toggle
         val autoSyncOnStart = autoSyncSwitch?.isChecked ?: true
-        
+
         // Create intent for WebViewActivity
         val intent = Intent(this, WebViewActivity::class.java).apply {
             // Pass URL to load
@@ -248,13 +255,13 @@ class FullExampleActivity : AppCompatActivity() {
             // Pass auto-sync option
             putExtra(WebViewActivity.EXTRA_AUTO_SYNC, autoSyncOnStart)
         }
-        
+
         // Launch the activity
         startActivity(intent)
-        
+
         Toast.makeText(this, "Launching WebView with autoSync=$autoSyncOnStart", Toast.LENGTH_SHORT).show()
     }
-    
+
     /**
      * WebView is now managed in WebViewActivity, so this method is no longer needed
      */
@@ -262,33 +269,33 @@ class FullExampleActivity : AppCompatActivity() {
         // No longer needed as WebView is in a separate activity
         Toast.makeText(this, "WebView is managed by WebViewActivity", Toast.LENGTH_SHORT).show()
     }
-    
+
     /**
      * Creates a background WebView that's not shown to the user
      */
     private fun addBackgroundWebView() {
         // Get autoSync value from the toggle
         val autoSyncOnStart = autoSyncSwitch?.isChecked ?: true
-        
+
         // Create a WebView that won't be shown on screen
         val backgroundWebView = Janus.createConsentWebView(this, autoSyncOnStart)
-        
+
         // Add to our list of background WebViews
         backgroundWebViews.add(backgroundWebView)
-        
+
         // Load the website URL
         backgroundWebView.loadUrl(janusManager.websiteURL)
-        
+
         // Update the displayed count
         updateBackgroundWebViewCount()
-        
+
         Toast.makeText(
-            this, 
-            "Background WebView added (total: ${backgroundWebViews.size})", 
+            this,
+            "Background WebView added (total: ${backgroundWebViews.size})",
             Toast.LENGTH_SHORT
         ).show()
     }
-    
+
     /**
      * Updates the text showing how many background WebViews exist
      */
@@ -296,7 +303,7 @@ class FullExampleActivity : AppCompatActivity() {
         val countTextView = binding.backgroundWebViewCount
         countTextView.text = "Background WebViews: ${backgroundWebViews.size}"
     }
-    
+
     /**
      * Removes all background WebViews
      */
@@ -305,16 +312,16 @@ class FullExampleActivity : AppCompatActivity() {
         for (backgroundWebView in backgroundWebViews) {
             Janus.releaseConsentWebView(backgroundWebView)
         }
-        
+
         // Clear the list
         backgroundWebViews.clear()
-        
+
         // Update the display
         updateBackgroundWebViewCount()
-        
+
         Toast.makeText(this, "All background WebViews removed", Toast.LENGTH_SHORT).show()
     }
-    
+
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         if (item.itemId == android.R.id.home) {
             finish()
@@ -322,17 +329,17 @@ class FullExampleActivity : AppCompatActivity() {
         }
         return super.onOptionsItemSelected(item)
     }
-    
+
     override fun onDestroy() {
         super.onDestroy()
-        
+
         // Clean up the foreground WebView
         webView?.let {
             Janus.releaseConsentWebView(it)
             webView = null
         }
-        
+
         // Clean up all background WebViews
         removeAllBackgroundWebViews()
     }
-} 
+}
