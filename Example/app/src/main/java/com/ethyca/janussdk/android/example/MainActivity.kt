@@ -122,6 +122,22 @@ class MainActivity : AppCompatActivity() {
             janusManager.clearLocalStorage(this)
             Toast.makeText(this, "Storage cleared", Toast.LENGTH_SHORT).show()
         }
+        
+        binding.getLocationByIPButton.setOnClickListener {
+            // Set loading state, button remains clickable
+            binding.getLocationByIPButton.isEnabled = false
+            binding.getLocationByIPButton.text = "Loading..."
+            
+            janusManager.getIPLocationDetails { response ->
+                // Set the response text and make it visible
+                binding.ipLocationResponseText.text = response
+                binding.ipLocationResponseText.visibility = View.VISIBLE
+                
+                // Reset button state
+                binding.getLocationByIPButton.isEnabled = true
+                binding.getLocationByIPButton.text = "Get Location by IP Address"
+            }
+        }
     }
     
     private fun isLaunchEnabled(): Boolean {

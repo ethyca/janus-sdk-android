@@ -12,6 +12,7 @@ import com.ethyca.janussdk.android.events.JanusEventType
 import com.ethyca.janussdk.android.consent.ConsentMetadata
 import java.util.*
 import android.app.Activity
+import com.ethyca.janussdk.android.JanusError
 
 /**
  * ViewModel that manages interactions with the Janus SDK
@@ -245,7 +246,7 @@ class JanusManager : ViewModel() {
         android.webkit.CookieManager.getInstance().flush()
         
         // Clear Janus SDK storage
-        Janus.clearConsent(clearMetadata = true)
+        Janus.clearConsent(context, clearMetadata = true)
         
         // Reset consent values
         _consentValues.value = emptyMap()
@@ -287,6 +288,53 @@ class JanusManager : ViewModel() {
             mainHandler.post {
                 _ipDetectedRegion.value = detectedRegion
                 callback(success, detectedRegion)
+            }
+        }
+    }
+    
+    /**
+     * Get detailed IP location information
+     */
+    fun getIPLocationDetails(callback: (String) -> Unit) {
+        Janus.getLocationByIPAddress { success, locationData, error ->
+            val responseText = if (success && locationData != null) {
+                val sb = StringBuilder()
+                sb.append("✅ IP Location Response:\n\n")
+                sb.append("IP: ${locationData.ip ?: "N/A"}\n")
+                sb.append("Country: ${locationData.country ?: "N/A"}\n")
+                sb.append("Location: ${locationData.location ?: "N/A"}\n")
+                sb.append("Region: ${locationData.region ?: "N/A"}\n")
+                sb.toString()
+            } else {
+                val sb = StringBuilder()
+                sb.append("❌ Error getting IP location:\n\n")
+                
+                when (error) {
+                    is JanusError.IPLocationFailed -> {
+                        // This error occurs when the API returns data but it's not valid
+                        sb.append("IP Location Failed: Invalid or empty location data")
+                        val failedData = error.ipLocationResponse
+                        sb.append("\n\nPartial data received:")
+                        sb.append("\nIP: ${failedData.ip ?: "N/A"}")
+                        sb.append("\nCountry: ${failedData.country ?: "N/A"}")
+                        sb.append("\nLocation: ${failedData.location ?: "N/A"}")
+                        sb.append("\nRegion: ${failedData.region ?: "N/A"}")
+                    }
+                    is JanusError.NetworkError -> {
+                        // This error occurs for network failures
+                        sb.append("Network Error: ${error.message ?: "Unknown network error"}")
+                    }
+                    else -> {
+                        // Any other error type
+                        sb.append("Error: ${error?.message ?: "Unknown error"}")
+                    }
+                }
+                
+                sb.toString()
+            }
+            
+            mainHandler.post {
+                callback(responseText)
             }
         }
     }

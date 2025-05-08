@@ -163,6 +163,24 @@
                 app:backgroundTint="@android:color/holo_red_light"
                 android:padding="12dp" />
 
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/getLocationByIPButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="Get Location by IP Address"
+                android:padding="12dp" />
+
+            <TextView
+                android:id="@+id/ipLocationResponseText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:padding="8dp"
+                android:background="#F5F5F5"
+                android:textAppearance="@style/TextAppearance.MaterialComponents.Body2"
+                android:visibility="gone" />
+
             <ProgressBar
                 android:id="@+id/loadingProgressBar"
                 android:layout_width="36dp"
