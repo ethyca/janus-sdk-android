@@ -17,7 +17,7 @@ Add the JanusSDK dependency to your app's `build.gradle.kts` file:
 
 ```kotlin
 dependencies {
-    implementation("com.ethyca.janussdk:android:1.0.10")
+    implementation("com.ethyca.janussdk:android:1.0.11")
 }
 ```
 
@@ -25,7 +25,7 @@ If you are using a `libs.versions.toml` file, add the following entry:
 
 ```toml
 [libraries]
-janus-sdk = { module = "com.ethyca.janussdk:android", version = "1.0.10" }
+janus-sdk = { module = "com.ethyca.janussdk:android", version = "1.0.11" }
 ```
 
 Then in your `build.gradle.kts`:
@@ -40,7 +40,7 @@ dependencies {
 
 ```groovy
 dependencies {
-    implementation 'com.ethyca.janussdk:android:1.0.10'
+    implementation 'com.ethyca.janussdk:android:1.0.11'
 }
 ```
 
@@ -82,7 +82,8 @@ class MainActivity : AppCompatActivity() {
     private fun initializeJanus(activity: Activity) {
         // Configure Janus
         val config = JanusConfiguration.Builder()
-            .apiHost("https://privacy-center.yourhost.com")
+            .apiHost("https://privacy-plus.yourhost.com")
+            .privacyCenterHost("https://privacy-center.yourhost.com")
             .propertyId("FDS-A0B1C2")
             .ipLocation(true)
             .region("US-CA")
@@ -102,6 +103,7 @@ class MainActivity : AppCompatActivity() {
                         presentRegionSelector { selectedRegion ->
                             val newConfig = JanusConfiguration.Builder()
                                 .apiHost(config.apiHost)
+                                .privacyCenterHost(config.privacyCenterHost)
                                 .propertyId(config.propertyId)
                                 .ipLocation(false)
                                 .region(selectedRegion)
@@ -159,11 +161,12 @@ class MainActivity : AppCompatActivity() {
 ```kotlin
 // Configure Janus with required credentials and settings
 val config = JanusConfiguration.Builder()
-    .apiHost("https://privacy-center.yourhost.com")  // 🌎 Fides base URL
-    .propertyId("FDS-A0B1C2")                        // 🏢 Property identifier for this app
-    .ipLocation(true)                                // 📍 Use IP-based geolocation
-    .region("US-CA")                                 // 🌎 Provide if geolocation is false or fails
-    .fidesEvents(true)                               // 🔄 Map JanusEvents to FidesJS events in WebViews
+    .apiHost("https://privacy-plus.yourhost.com")             // 🌎 FidesPlus API server base URL (REQUIRED)
+    .privacyCenterHost("https://privacy-center.yourhost.com") // 🏢 Privacy Center host URL - if not provided, Janus will use the apiHost
+    .propertyId("FDS-A0B1C2")                                 // 🏢 Property identifier for this app
+    .ipLocation(true)                                         // 📍 Use IP-based geolocation
+    .region("US-CA")                                          // 🌎 Provide if geolocation is false or fails
+    .fidesEvents(true)                                        // 🔄 Map JanusEvents to FidesJS events in WebViews
     .build()
 
 // Initialize with an Activity reference

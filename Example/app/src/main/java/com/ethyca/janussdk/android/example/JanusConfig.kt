@@ -20,6 +20,7 @@ enum class ConfigurationType {
 data class JanusConfig(
     var type: ConfigurationType = ConfigurationType.ETHYCA,
     var apiHost: String = "https://privacy.ethyca.com",
+    var privacyCenterHost: String = "",
     var website: String = "https://ethyca.com",
     var propertyId: String? = "FDS-KSB4MF",
     var region: String? = null
@@ -27,6 +28,7 @@ data class JanusConfig(
     companion object {
         private const val PREFS_NAME = "janus_example_prefs"
         private const val KEY_API_HOST = "api_host"
+        private const val KEY_PRIVACY_CENTER_HOST = "privacy_center_host"
         private const val KEY_WEBSITE = "website"
         private const val KEY_PROPERTY_ID = "property_id"
         private const val KEY_REGION = "region"
@@ -42,6 +44,7 @@ data class JanusConfig(
                     JanusConfig(
                         type = ConfigurationType.ETHYCA_EMPTY,
                         apiHost = "https://privacy.ethyca.com",
+                        privacyCenterHost = "",
                         website = "https://ethyca.com",
                         propertyId = null,
                         region = null
@@ -50,6 +53,7 @@ data class JanusConfig(
                     JanusConfig(
                         type = ConfigurationType.COOKIE_HOUSE,
                         apiHost = "https://privacy-plus-rc.fides-staging.ethyca.com",
+                        privacyCenterHost = "",
                         website = "https://cookiehouse-plus-rc.fides-staging.ethyca.com",
                         propertyId = null,
                         region = null
@@ -58,6 +62,7 @@ data class JanusConfig(
                     JanusConfig(
                         type = ConfigurationType.COOKIE_HOUSE_NIGHTLY,
                         apiHost = "https://privacy-plus-nightly.fides-staging.ethyca.com",
+                        privacyCenterHost = "",
                         website = "https://cookiehouse-plus-nightly.fides-staging.ethyca.com",
                         propertyId = null,
                         region = null
@@ -75,6 +80,7 @@ data class JanusConfig(
             return JanusConfig(
                 type = ConfigurationType.CUSTOM,
                 apiHost = prefs.getString(KEY_API_HOST, "") ?: "",
+                privacyCenterHost = prefs.getString(KEY_PRIVACY_CENTER_HOST, "") ?: "",
                 website = prefs.getString(KEY_WEBSITE, "") ?: "",
                 propertyId = prefs.getString(KEY_PROPERTY_ID, "")?.takeUnless { it.isEmpty() },
                 region = prefs.getString(KEY_REGION, "")?.takeUnless { it.isEmpty() }
@@ -90,6 +96,7 @@ data class JanusConfig(
             val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
             prefs.edit().apply {
                 putString(KEY_API_HOST, apiHost)
+                putString(KEY_PRIVACY_CENTER_HOST, privacyCenterHost)
                 putString(KEY_WEBSITE, website)
                 putString(KEY_PROPERTY_ID, propertyId ?: "")
                 putString(KEY_REGION, region ?: "")

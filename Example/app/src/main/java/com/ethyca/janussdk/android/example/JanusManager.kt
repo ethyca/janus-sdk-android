@@ -119,9 +119,10 @@ class JanusManager : ViewModel() {
         // Create the JanusConfiguration using the builder pattern
         val janusConfig = JanusConfiguration.Builder()
             .apiHost(config.apiHost)
+            .privacyCenterHost(config.privacyCenterHost)
             .propertyId(config.propertyId ?: "")
             .ipLocation(config.region == null) // Only use IP location if no region is provided
-            .region(config.region)
+            .region(config.region ?: "")
             .build()
         
         try {

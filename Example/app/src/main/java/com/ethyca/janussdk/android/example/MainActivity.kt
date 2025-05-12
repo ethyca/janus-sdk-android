@@ -68,6 +68,12 @@ class MainActivity : AppCompatActivity() {
             }
         }
         
+        binding.privacyCenterHostInput.doOnTextChanged { text, _, _, _ ->
+            if (currentConfig.type == ConfigurationType.CUSTOM) {
+                currentConfig.privacyCenterHost = text.toString()
+            }
+        }
+        
         binding.websiteInput.doOnTextChanged { text, _, _, _ ->
             if (currentConfig.type == ConfigurationType.CUSTOM) {
                 currentConfig.website = text.toString()
@@ -90,6 +96,7 @@ class MainActivity : AppCompatActivity() {
     
     private fun updateInputFields() {
         binding.apiHostInput.setText(currentConfig.apiHost)
+        binding.privacyCenterHostInput.setText(currentConfig.privacyCenterHost)
         binding.websiteInput.setText(currentConfig.website)
         binding.propertyIdInput.setText(currentConfig.propertyId ?: "")
         binding.regionInput.setText(currentConfig.region ?: "")
@@ -99,6 +106,7 @@ class MainActivity : AppCompatActivity() {
         val isCustom = currentConfig.type == ConfigurationType.CUSTOM
         
         binding.apiHostInput.isEnabled = isCustom
+        binding.privacyCenterHostInput.isEnabled = isCustom
         binding.websiteInput.isEnabled = isCustom
         binding.propertyIdInput.isEnabled = isCustom
         // Region is always editable to override IP location
