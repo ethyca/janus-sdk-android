@@ -123,6 +123,7 @@ class JanusManager : ViewModel() {
             .propertyId(config.propertyId ?: "")
             .ipLocation(config.region == null) // Only use IP location if no region is provided
             .region(config.region ?: "")
+            .autoShowExperience(config.autoShowExperience)
             .build()
         
         try {

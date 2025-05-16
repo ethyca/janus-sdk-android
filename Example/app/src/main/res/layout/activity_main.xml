@@ -156,6 +156,14 @@
 
                     </com.google.android.material.textfield.TextInputLayout>
 
+                    <com.google.android.material.switchmaterial.SwitchMaterial
+                        android:id="@+id/autoShowExperienceSwitch"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Auto-Show Experience"
+                        android:checked="true"
+                        android:layout_marginBottom="8dp" />
+
                 </LinearLayout>
 
             </com.google.android.material.card.MaterialCardView>

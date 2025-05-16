@@ -17,7 +17,7 @@ Add the JanusSDK dependency to your app's `build.gradle.kts` file:
 
 ```kotlin
 dependencies {
-    implementation("com.ethyca.janussdk:android:1.0.11")
+    implementation("com.ethyca.janussdk:android:1.0.12")
 }
 ```
 
@@ -25,7 +25,7 @@ If you are using a `libs.versions.toml` file, add the following entry:
 
 ```toml
 [libraries]
-janus-sdk = { module = "com.ethyca.janussdk:android", version = "1.0.11" }
+janus-sdk = { module = "com.ethyca.janussdk:android", version = "1.0.12" }
 ```
 
 Then in your `build.gradle.kts`:
@@ -40,7 +40,7 @@ dependencies {
 
 ```groovy
 dependencies {
-    implementation 'com.ethyca.janussdk:android:1.0.11'
+    implementation 'com.ethyca.janussdk:android:1.0.12'
 }
 ```
 
@@ -88,6 +88,7 @@ class MainActivity : AppCompatActivity() {
             .ipLocation(true)
             .region("US-CA")
             .fidesEvents(true)
+            .autoShowExperience(true)
             .build()
         
         // Initialize Janus with the activity reference
@@ -108,6 +109,7 @@ class MainActivity : AppCompatActivity() {
                                 .ipLocation(false)
                                 .region(selectedRegion)
                                 .fidesEvents(config.fidesEvents)
+                                .autoShowExperience(config.autoShowExperience)
                                 .build()
                             Janus.initialize(activity, newConfig) { /* handle result */ }
                         }
@@ -164,9 +166,10 @@ val config = JanusConfiguration.Builder()
     .apiHost("https://privacy-plus.yourhost.com")             // 🌎 FidesPlus API server base URL (REQUIRED)
     .privacyCenterHost("https://privacy-center.yourhost.com") // 🏢 Privacy Center host URL - if not provided, Janus will use the apiHost
     .propertyId("FDS-A0B1C2")                                 // 🏢 Property identifier for this app
-    .ipLocation(true)                                         // 📍 Use IP-based geolocation
+    .ipLocation(true)                                         // 📍 Use IP-based geolocation (default true)
     .region("US-CA")                                          // 🌎 Provide if geolocation is false or fails
-    .fidesEvents(true)                                        // 🔄 Map JanusEvents to FidesJS events in WebViews
+    .fidesEvents(true)                                        // 🔄 Map JanusEvents to FidesJS events in WebViews (default true)
+    .autoShowExperience(true)                                 // 🚀 Automatically show privacy experience after initialization (default true)
     .build()
 
 // Initialize with an Activity reference
@@ -414,6 +417,48 @@ class MainActivity : AppCompatActivity() {
         // Clean up resources
         listenerId?.let { Janus.removeConsentEventListener(it) }
         consentWebView?.let { Janus.releaseConsentWebView(it) }
+    }
+}
+```
+
+### Controlling Privacy Experience Display
+
+By default, Janus will automatically show the privacy experience after successful initialization if `shouldShowExperience` returns true. You can control this behavior with the `autoShowExperience` configuration parameter.
+
+#### Option 1: Automatic display (default)
+
+```kotlin
+// With autoShowExperience set to true (default), Janus will automatically
+// show the privacy experience after initialization if shouldShowExperience is true
+val config = JanusConfiguration.Builder()
+    .apiHost("https://privacy-plus.yourhost.com")
+    // Other parameters...
+    .autoShowExperience(true) // Default behavior
+    .build()
+```
+
+#### Option 2: Manual control
+
+```kotlin
+// Disable automatic display by setting autoShowExperience to false
+val config = JanusConfiguration.Builder()
+    .apiHost("https://privacy-plus.yourhost.com")
+    // Other parameters...
+    .autoShowExperience(false) // Prevent automatic display
+    .build()
+
+// Initialize Janus without showing the privacy experience immediately
+Janus.initialize(activity, config) { success, error ->
+    if (success) {
+        // You can now decide when to show the experience
+        
+        // Check if the experience should be shown (based on consent status, etc.)
+        if (Janus.shouldShowExperience) {
+            // Show at the appropriate time in your app flow
+            Handler(Looper.getMainLooper()).postDelayed({
+                Janus.showExperience(activity)
+            }, 2000) // 2-second delay example
+        }
     }
 }
 ```

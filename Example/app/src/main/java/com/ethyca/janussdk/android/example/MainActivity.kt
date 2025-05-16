@@ -90,6 +90,11 @@ class MainActivity : AppCompatActivity() {
             currentConfig.region = text.toString().ifEmpty { null }
         }
         
+        // Setup autoShowExperience switch listener
+        binding.autoShowExperienceSwitch.setOnCheckedChangeListener { _, isChecked ->
+            currentConfig.autoShowExperience = isChecked
+        }
+        
         // Set initial enabled state
         updateInputFieldsEnabled()
     }
@@ -100,6 +105,7 @@ class MainActivity : AppCompatActivity() {
         binding.websiteInput.setText(currentConfig.website)
         binding.propertyIdInput.setText(currentConfig.propertyId ?: "")
         binding.regionInput.setText(currentConfig.region ?: "")
+        binding.autoShowExperienceSwitch.isChecked = currentConfig.autoShowExperience
     }
     
     private fun updateInputFieldsEnabled() {

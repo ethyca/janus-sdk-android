@@ -23,7 +23,8 @@ data class JanusConfig(
     var privacyCenterHost: String = "",
     var website: String = "https://ethyca.com",
     var propertyId: String? = "FDS-KSB4MF",
-    var region: String? = null
+    var region: String? = null,
+    var autoShowExperience: Boolean = true
 ) {
     companion object {
         private const val PREFS_NAME = "janus_example_prefs"
@@ -32,6 +33,7 @@ data class JanusConfig(
         private const val KEY_WEBSITE = "website"
         private const val KEY_PROPERTY_ID = "property_id"
         private const val KEY_REGION = "region"
+        private const val KEY_AUTO_SHOW_EXPERIENCE = "auto_show_experience"
         
         /**
          * Create a configuration for the given type
@@ -47,7 +49,8 @@ data class JanusConfig(
                         privacyCenterHost = "",
                         website = "https://ethyca.com",
                         propertyId = null,
-                        region = null
+                        region = null,
+                        autoShowExperience = true
                     )
                 ConfigurationType.COOKIE_HOUSE ->
                     JanusConfig(
@@ -56,7 +59,8 @@ data class JanusConfig(
                         privacyCenterHost = "",
                         website = "https://cookiehouse-plus-rc.fides-staging.ethyca.com",
                         propertyId = null,
-                        region = null
+                        region = null,
+                        autoShowExperience = true
                     )
                 ConfigurationType.COOKIE_HOUSE_NIGHTLY ->
                     JanusConfig(
@@ -65,7 +69,8 @@ data class JanusConfig(
                         privacyCenterHost = "",
                         website = "https://cookiehouse-plus-nightly.fides-staging.ethyca.com",
                         propertyId = null,
-                        region = null
+                        region = null,
+                        autoShowExperience = true
                     )
                 ConfigurationType.CUSTOM -> 
                     loadCustomConfig(context)
@@ -83,7 +88,8 @@ data class JanusConfig(
                 privacyCenterHost = prefs.getString(KEY_PRIVACY_CENTER_HOST, "") ?: "",
                 website = prefs.getString(KEY_WEBSITE, "") ?: "",
                 propertyId = prefs.getString(KEY_PROPERTY_ID, "")?.takeUnless { it.isEmpty() },
-                region = prefs.getString(KEY_REGION, "")?.takeUnless { it.isEmpty() }
+                region = prefs.getString(KEY_REGION, "")?.takeUnless { it.isEmpty() },
+                autoShowExperience = prefs.getBoolean(KEY_AUTO_SHOW_EXPERIENCE, true)
             )
         }
     }
@@ -100,6 +106,7 @@ data class JanusConfig(
                 putString(KEY_WEBSITE, website)
                 putString(KEY_PROPERTY_ID, propertyId ?: "")
                 putString(KEY_REGION, region ?: "")
+                putBoolean(KEY_AUTO_SHOW_EXPERIENCE, autoShowExperience)
                 apply()
             }
         }
