@@ -32,9 +32,6 @@ class MainActivity : AppCompatActivity() {
         
         // Setup buttons
         setupButtons()
-        
-        // Observe initialization state
-        observeJanusState()
     }
     
     private fun setupConfigSpinner() {
@@ -125,6 +122,12 @@ class MainActivity : AppCompatActivity() {
                 // Save config if it's custom
                 currentConfig.save(this)
                 
+                // Hide the loading indicator initially
+                binding.loadingProgressBar.visibility = View.GONE
+                
+                // Set up observers before initializing
+                setupJanusObservers()
+                
                 // Initialize Janus with context
                 janusManager.setConfig(currentConfig, this)
             } else {
@@ -162,24 +165,23 @@ class MainActivity : AppCompatActivity() {
         }
     }
     
-    private fun observeJanusState() {
-        // Hide the loading indicator initially
-        binding.loadingProgressBar.visibility = View.GONE
+    private fun setupJanusObservers() {
+        // Flag to track if we've already navigated
+        var hasNavigated = false
         
         // Observe initialization state
         janusManager.isInitializing.observe(this) { isInitializing ->
             binding.loadingProgressBar.visibility = if (isInitializing) View.VISIBLE else View.GONE
-        }
-        
-        // Observe initialization result
-        janusManager.isInitialized.observe(this) { isInitialized ->
-            if (isInitialized) {
-                // Navigate to details screen
+            
+            // When initialization finishes (with success or failure), navigate only once
+            if (!isInitializing && !hasNavigated) {
+                // We only navigate here if initialization has finished (regardless of result)
+                hasNavigated = true
                 startActivity(FullExampleActivity.createIntent(this))
             }
         }
         
-        // Observe initialization error
+        // Observe initialization error (just for showing toast, no navigation)
         janusManager.initializationError.observe(this) { error ->
             if (!error.isNullOrEmpty()) {
                 Toast.makeText(this, "Error: $error", Toast.LENGTH_LONG).show()
