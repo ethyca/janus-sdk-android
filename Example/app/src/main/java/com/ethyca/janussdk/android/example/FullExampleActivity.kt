@@ -131,7 +131,12 @@ class FullExampleActivity : AppCompatActivity() {
         janusManager.isInitialized.observe(this) { isInitialized ->
             println("FullExampleActivity: isInitialized updated to: $isInitialized")
             binding.statusCard.visibility = View.VISIBLE
-            updateStatusText(binding.statusValueText, isInitialized, "Success ✅", "Not Initialized")
+            
+            // Only update status text if not currently initializing
+            val isCurrentlyInitializing = janusManager.isInitializing.value ?: false
+            if (!isCurrentlyInitializing) {
+                updateStatusText(binding.statusValueText, isInitialized, "Success ✅", "Failed ❌")
+            }
 
             // If initialized, show the current region
             if (isInitialized) {
@@ -142,9 +147,51 @@ class FullExampleActivity : AppCompatActivity() {
             }
         }
 
+        // Observe initializing state to show spinner
+        janusManager.isInitializing.observe(this) { isInitializing ->
+            if (isInitializing) {
+                // Show progress bars and loading text
+                binding.statusProgressBar.visibility = View.VISIBLE
+                binding.hasExperienceProgressBar.visibility = View.VISIBLE
+                
+                binding.statusValueText.text = "Initializing..."
+                binding.statusValueText.setTextColor(
+                    ContextCompat.getColor(this, R.color.status_loading)
+                )
+                binding.hasExperienceValueText.text = "Loading..."
+                binding.hasExperienceValueText.setTextColor(
+                    ContextCompat.getColor(this, R.color.status_loading)
+                )
+            } else {
+                // Hide progress bars
+                binding.statusProgressBar.visibility = View.GONE
+                binding.hasExperienceProgressBar.visibility = View.GONE
+                
+                // Update with final status when initialization completes
+                val isInitialized = janusManager.isInitialized.value ?: false
+                updateStatusText(binding.statusValueText, isInitialized, "Success ✅", "Failed ❌")
+                
+                val hasExperience = janusManager.hasExperience.value ?: false
+                updateStatusText(binding.hasExperienceValueText, hasExperience, "Available ✅", "Not Available ❌")
+            }
+        }
+
+        // Observe initialization errors
+        janusManager.initializationError.observe(this) { error ->
+            if (!error.isNullOrEmpty()) {
+                // Show error toast but don't change the UI state - let the isInitialized observer handle that
+                showToast("Initialization Error: $error")
+            }
+        }
+
         // Observe has experience
         janusManager.hasExperience.observe(this) { hasExperience ->
-            updateStatusText(binding.hasExperienceValueText, hasExperience, "Available ✅", "Not Available ❌")
+            // Only update if not currently initializing
+            val isCurrentlyInitializing = janusManager.isInitializing.value ?: false
+            if (!isCurrentlyInitializing) {
+                updateStatusText(binding.hasExperienceValueText, hasExperience, "Available ✅", "Not Available ❌")
+            }
+            
             // Toggle visibility of copy button based on experience availability
             binding.copyExperienceButton.visibility = if (hasExperience) View.VISIBLE else View.GONE
             // Enable/disable show experience button based on experience availability
