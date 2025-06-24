@@ -153,6 +153,7 @@ class FullExampleActivity : AppCompatActivity() {
                 // Show progress bars and loading text
                 binding.statusProgressBar.visibility = View.VISIBLE
                 binding.hasExperienceProgressBar.visibility = View.VISIBLE
+                binding.shouldShowExperienceProgressBar.visibility = View.VISIBLE
                 
                 binding.statusValueText.text = "Initializing..."
                 binding.statusValueText.setTextColor(
@@ -162,10 +163,15 @@ class FullExampleActivity : AppCompatActivity() {
                 binding.hasExperienceValueText.setTextColor(
                     ContextCompat.getColor(this, R.color.status_loading)
                 )
+                binding.shouldShowExperienceValueText.text = "Loading..."
+                binding.shouldShowExperienceValueText.setTextColor(
+                    ContextCompat.getColor(this, R.color.status_loading)
+                )
             } else {
                 // Hide progress bars
                 binding.statusProgressBar.visibility = View.GONE
                 binding.hasExperienceProgressBar.visibility = View.GONE
+                binding.shouldShowExperienceProgressBar.visibility = View.GONE
                 
                 // Update with final status when initialization completes
                 val isInitialized = janusManager.isInitialized.value ?: false
@@ -173,6 +179,9 @@ class FullExampleActivity : AppCompatActivity() {
                 
                 val hasExperience = janusManager.hasExperience.value ?: false
                 updateStatusText(binding.hasExperienceValueText, hasExperience, "Available ✅", "Not Available ❌")
+                
+                val shouldShowExperience = janusManager.shouldShowExperience.value ?: false
+                updateStatusText(binding.shouldShowExperienceValueText, shouldShowExperience, "Yes ✅", "No ❌")
             }
         }
 
@@ -196,6 +205,15 @@ class FullExampleActivity : AppCompatActivity() {
             binding.copyExperienceButton.visibility = if (hasExperience) View.VISIBLE else View.GONE
             // Enable/disable show experience button based on experience availability
             binding.showExperienceButton.isEnabled = hasExperience
+        }
+
+        // Observe should show experience
+        janusManager.shouldShowExperience.observe(this) { shouldShowExperience ->
+            // Only update if not currently initializing
+            val isCurrentlyInitializing = janusManager.isInitializing.value ?: false
+            if (!isCurrentlyInitializing) {
+                updateStatusText(binding.shouldShowExperienceValueText, shouldShowExperience, "Yes ✅", "No ❌")
+            }
         }
 
         // Observe IP detected region

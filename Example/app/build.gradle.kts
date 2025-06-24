@@ -44,6 +44,9 @@ dependencies {
     
     // Add Gson for JSON parsing (required by Janus SDK)
     implementation("com.google.code.gson:gson:2.10.1")
+    
+    // OkHttp for HTTPLogger
+    implementation("com.squareup.okhttp3:okhttp:4.12.0")
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)

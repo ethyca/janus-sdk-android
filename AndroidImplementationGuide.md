@@ -17,7 +17,7 @@ Add the JanusSDK dependency to your app's `build.gradle.kts` file:
 
 ```kotlin
 dependencies {
-    implementation("com.ethyca.janussdk:android:1.0.16")
+    implementation("com.ethyca.janussdk:android:1.0.17")
 }
 ```
 
@@ -25,7 +25,7 @@ If you are using a `libs.versions.toml` file, add the following entry:
 
 ```toml
 [libraries]
-janus-sdk = { module = "com.ethyca.janussdk:android", version = "1.0.16" }
+janus-sdk = { module = "com.ethyca.janussdk:android", version = "1.0.17" }
 ```
 
 Then in your `build.gradle.kts`:
@@ -40,7 +40,48 @@ dependencies {
 
 ```groovy
 dependencies {
-    implementation 'com.ethyca.janussdk:android:1.0.16'
+    implementation 'com.ethyca.janussdk:android:1.0.17'
+}
+```
+
+### Custom Logging
+
+The Janus SDK supports custom logging implementations through the `JanusLogger` interface. This is useful for debugging, monitoring, and integrating with your app's existing logging infrastructure.
+
+#### JanusLogger Interface
+
+```kotlin
+interface JanusLogger {
+    fun log(
+        level: JanusLogLevel,
+        message: String,
+        metadata: Map<String, String>? = null,
+        error: Throwable? = null
+    )
+}
+
+enum class JanusLogLevel {
+    VERBOSE, DEBUG, INFO, WARN, ERROR
+}
+```
+
+#### Setting a Custom Logger
+
+If you have implemented your own custom logger implementation, be sure to call setLogger() prior to initialize() in order to receive logs that occur during the initialization of the SDK.
+
+```kotlin
+// Set custom logger BEFORE initializing Janus
+val myCustomLogger = MyCustomJanusLogger()
+Janus.setLogger(myCustomLogger)
+
+// Now initialize Janus - logs during initialization will use your custom logger
+val config = JanusConfiguration.Builder()
+    .apiHost("https://privacy-plus.yourhost.com")
+    .propertyId("FDS-A0B1C2")
+    .build()
+    
+Janus.initialize(this, config) { success, error ->
+    // Handle initialization result
 }
 ```
 

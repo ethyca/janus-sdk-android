@@ -96,6 +96,17 @@ class JanusManager : ViewModel() {
     private fun setupJanus(activity: Activity) {
         val config = currentConfig ?: return
         
+        // Initialize HTTPLogger and set it before Janus initialization
+        // SAMPLE implementation/usage of a custom HTTP logger
+        // can be used in conjunction with logdy for local logging
+        // logdy --no-analytics -p 8181 --api-key foobar
+       val httpLogger = HTTPLogger(
+           endpoint = "http://10.0.2.2:8181/api/log", // Use 10.0.2.2 for Android emulator
+           authToken = "foobar",
+           source = "AndroidExampleApp"
+       )
+       Janus.setLogger(httpLogger)
+        
         // Set initializing state immediately
         mainHandler.post {
             _isInitializing.value = true
