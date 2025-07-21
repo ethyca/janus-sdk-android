@@ -17,7 +17,7 @@ Add the JanusSDK dependency to your app's `build.gradle.kts` file:
 
 ```kotlin
 dependencies {
-    implementation("com.ethyca.janussdk:android:1.0.18")
+    implementation("com.ethyca.janussdk:android:1.0.19")
 }
 ```
 
@@ -25,7 +25,7 @@ If you are using a `libs.versions.toml` file, add the following entry:
 
 ```toml
 [libraries]
-janus-sdk = { module = "com.ethyca.janussdk:android", version = "1.0.18" }
+janus-sdk = { module = "com.ethyca.janussdk:android", version = "1.0.19" }
 ```
 
 Then in your `build.gradle.kts`:
@@ -40,7 +40,7 @@ dependencies {
 
 ```groovy
 dependencies {
-    implementation 'com.ethyca.janussdk:android:1.0.18'
+    implementation 'com.ethyca.janussdk:android:1.0.19'
 }
 ```
 
@@ -61,7 +61,7 @@ interface JanusLogger {
 }
 
 enum class JanusLogLevel {
-    VERBOSE, DEBUG, INFO, WARN, ERROR
+    VERBOSE, DEBUG, INFO, WARNING, ERROR
 }
 ```
 
@@ -211,6 +211,8 @@ val config = JanusConfiguration.Builder()
     .region("US-CA")                                          // 🌎 Provide if geolocation is false or fails
     .fidesEvents(true)                                        // 🔄 Map JanusEvents to FidesJS events in WebViews (default true)
     .autoShowExperience(true)                                 // 🚀 Automatically show privacy experience after initialization (default true)
+    .saveUserPreferencesToFides(true)                         // 💾 Save user preferences to Fides via privacy-preferences API (default true)
+    .saveNoticesServedToFides(true)                           // 💾 Save notices served to Fides via notices-served API (default true)
     .build()
 
 // Initialize with an Activity reference

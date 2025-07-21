@@ -9,6 +9,8 @@ import android.content.SharedPreferences
 enum class ConfigurationType {
     ETHYCA,
     ETHYCA_EMPTY,
+    LOCAL_SLIM,
+    LOCAL_DEMO,
     COOKIE_HOUSE,
     COOKIE_HOUSE_NIGHTLY,
     CUSTOM
@@ -49,6 +51,26 @@ data class JanusConfig(
                         privacyCenterHost = "",
                         website = "https://ethyca.com",
                         propertyId = null,
+                        region = null,
+                        autoShowExperience = true
+                    )
+                ConfigurationType.LOCAL_SLIM ->
+                    JanusConfig(
+                        type = ConfigurationType.LOCAL_SLIM,
+                        apiHost = "http://10.0.2.2:3000",
+                        privacyCenterHost = "http://10.0.2.2:3001",
+                        website = "http://10.0.2.2:3001",
+                        propertyId = "FDS-YI2QWZ",
+                        region = null,
+                        autoShowExperience = true
+                    )
+                ConfigurationType.LOCAL_DEMO ->
+                    JanusConfig(
+                        type = ConfigurationType.LOCAL_DEMO,
+                        apiHost = "http://10.0.2.2:8080",
+                        privacyCenterHost = "http://10.0.2.2:3001",
+                        website = "http://10.0.2.2:3000",
+                        propertyId = "FDS-DY5EAX",
                         region = null,
                         autoShowExperience = true
                     )

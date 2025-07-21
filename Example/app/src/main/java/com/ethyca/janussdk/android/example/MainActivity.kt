@@ -78,9 +78,7 @@ class MainActivity : AppCompatActivity() {
         }
         
         binding.propertyIdInput.doOnTextChanged { text, _, _, _ ->
-            if (currentConfig.type == ConfigurationType.CUSTOM) {
-                currentConfig.propertyId = text.toString().ifEmpty { null }
-            }
+            currentConfig.propertyId = text.toString().ifEmpty { null }
         }
         
         binding.regionInput.doOnTextChanged { text, _, _, _ ->
@@ -111,7 +109,8 @@ class MainActivity : AppCompatActivity() {
         binding.apiHostInput.isEnabled = isCustom
         binding.privacyCenterHostInput.isEnabled = isCustom
         binding.websiteInput.isEnabled = isCustom
-        binding.propertyIdInput.isEnabled = isCustom
+        // Property ID is always editable to override static configuration
+        binding.propertyIdInput.isEnabled = true
         // Region is always editable to override IP location
         binding.regionInput.isEnabled = true
     }

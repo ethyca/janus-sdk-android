@@ -185,7 +185,7 @@ class JanusManager : ViewModel() {
         _shouldShowExperience.value = Janus.shouldShowExperience
         _currentExperience.value = try { Janus.currentExperience } catch (e: Exception) { null }
         _fidesString.value = Janus.fidesString
-        _consentMethod.value = Janus.consentMetadata.consentMethod
+        _consentMethod.value = Janus.consentMetadata.consentMethod.value
         _currentRegion.value = Janus.region
     }
     
