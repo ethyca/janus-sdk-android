@@ -17,4 +17,7 @@
     <color name="status_error">#FFF44336</color>
     <color name="status_inactive">#FF757575</color>
     <color name="status_loading">#FFFF9800</color>
+    <color name="status_acknowledge">#FF2196F3</color>
+    <color name="status_not_applicable">#FF9E9E9E</color>
+    <color name="text_primary">#FF000000</color>
 </resources>

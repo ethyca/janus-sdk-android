@@ -162,7 +162,31 @@
                         android:layout_height="wrap_content"
                         android:text="Auto-Show Experience"
                         android:checked="true"
-                        android:layout_marginBottom="8dp" />
+                        android:layout_marginBottom="16dp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Consent Flag Type"
+                        android:textAppearance="@style/TextAppearance.MaterialComponents.Caption" />
+
+                    <Spinner
+                        android:id="@+id/consentFlagTypeSpinner"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="16dp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Non-Applicable Flag Mode"
+                        android:textAppearance="@style/TextAppearance.MaterialComponents.Caption" />
+
+                    <Spinner
+                        android:id="@+id/consentNonApplicableFlagModeSpinner"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="16dp" />
 
                 </LinearLayout>
 

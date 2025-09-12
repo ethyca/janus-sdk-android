@@ -13,6 +13,7 @@ import com.ethyca.janussdk.android.consent.ConsentMetadata
 import java.util.*
 import android.app.Activity
 import com.ethyca.janussdk.android.JanusError
+import com.google.gson.GsonBuilder
 
 /**
  * ViewModel that manages interactions with the Janus SDK
@@ -41,8 +42,8 @@ class JanusManager : ViewModel() {
     val isListening: LiveData<Boolean> = _isListening
     
     // Consent data
-    private val _consentValues = MutableLiveData<Map<String, Boolean>>(emptyMap())
-    val consentValues: LiveData<Map<String, Boolean>> = _consentValues
+    private val _consentValues = MutableLiveData<Map<String, Any>>(emptyMap())
+    val consentValues: LiveData<Map<String, Any>> = _consentValues
     
     private val _consentMetadata = MutableLiveData<ConsentMetadata>(ConsentMetadata())
     val consentMetadata: LiveData<ConsentMetadata> = _consentMetadata
@@ -72,8 +73,8 @@ class JanusManager : ViewModel() {
     val currentExperience: LiveData<Any?> = _currentExperience
     
     // Event log
-    private val _events = MutableLiveData<List<String>>(emptyList())
-    val events: LiveData<List<String>> = _events
+    private val _events = MutableLiveData<List<EventItem>>(emptyList())
+    val events: LiveData<List<EventItem>> = _events
     
     // Configuration
     private var currentConfig: JanusConfig? = null
@@ -135,6 +136,8 @@ class JanusManager : ViewModel() {
             .ipLocation(config.region == null) // Only use IP location if no region is provided
             .region(config.region ?: "")
             .autoShowExperience(config.autoShowExperience)
+            .consentFlagType(config.consentFlagType)
+            .consentNonApplicableFlagMode(config.consentNonApplicableFlagMode)
             .build()
         
         try {
@@ -204,17 +207,27 @@ class JanusManager : ViewModel() {
         _hasExperience.value = Janus.hasExperience
         
         val id = Janus.addConsentEventListener { event ->
-            // Create a basic event description
-            val eventDescription = "Event: ${event.eventType}"
+            // Convert event detail to JSON string
+            val gson = GsonBuilder().setPrettyPrinting().create()
+            val eventDetailJson = try {
+                gson.toJson(event.detail)
+            } catch (e: Exception) {
+                event.detail.toString()
+            }
             
-            // Add more details as needed based on event type
+            // Create EventItem with full details
+            val eventItem = EventItem(
+                eventType = event.eventType.name,
+                eventDetail = eventDetailJson,
+                timestamp = System.currentTimeMillis()
+            )
             
             // Add the event to our log
             val currentEvents = _events.value ?: emptyList()
             
             // Use main thread for LiveData updates
             mainHandler.post {
-                _events.value = currentEvents + eventDescription
+                _events.value = currentEvents + eventItem
                 
                 // Refresh consent values for specific events
                 if (event.eventType == JanusEventType.CONSENT_UPDATED_FROM_WEBVIEW || 

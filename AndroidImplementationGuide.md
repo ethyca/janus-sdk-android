@@ -17,7 +17,7 @@ Add the JanusSDK dependency to your app's `build.gradle.kts` file:
 
 ```kotlin
 dependencies {
-    implementation("com.ethyca.janussdk:android:1.0.19")
+    implementation("com.ethyca.janussdk:android:1.0.20")
 }
 ```
 
@@ -25,7 +25,7 @@ If you are using a `libs.versions.toml` file, add the following entry:
 
 ```toml
 [libraries]
-janus-sdk = { module = "com.ethyca.janussdk:android", version = "1.0.19" }
+janus-sdk = { module = "com.ethyca.janussdk:android", version = "1.0.20" }
 ```
 
 Then in your `build.gradle.kts`:
@@ -40,7 +40,7 @@ dependencies {
 
 ```groovy
 dependencies {
-    implementation 'com.ethyca.janussdk:android:1.0.19'
+    implementation 'com.ethyca.janussdk:android:1.0.20'
 }
 ```
 
@@ -130,6 +130,8 @@ class MainActivity : AppCompatActivity() {
             .region("US-CA")
             .fidesEvents(true)
             .autoShowExperience(true)
+            .consentFlagType(ConsentFlagType.BOOLEAN)
+            .consentNonApplicableFlagMode(ConsentNonApplicableFlagMode.OMIT)
             .build()
         
         // Initialize Janus with the activity reference
@@ -151,6 +153,8 @@ class MainActivity : AppCompatActivity() {
                                 .region(selectedRegion)
                                 .fidesEvents(config.fidesEvents)
                                 .autoShowExperience(config.autoShowExperience)
+                                .consentFlagType(config.consentFlagType)
+                                .consentNonApplicableFlagMode(config.consentNonApplicableFlagMode)
                                 .build()
                             Janus.initialize(activity, newConfig) { /* handle result */ }
                         }
@@ -213,6 +217,8 @@ val config = JanusConfiguration.Builder()
     .autoShowExperience(true)                                 // 🚀 Automatically show privacy experience after initialization (default true)
     .saveUserPreferencesToFides(true)                         // 💾 Save user preferences to Fides via privacy-preferences API (default true)
     .saveNoticesServedToFides(true)                           // 💾 Save notices served to Fides via notices-served API (default true)
+    .consentFlagType(ConsentFlagType.BOOLEAN)                 // 🎯 Format for consent values (default boolean)
+    .consentNonApplicableFlagMode(ConsentNonApplicableFlagMode.OMIT)  // 🔄 Handle non-applicable notices (default omit)
     .build()
 
 // Initialize with an Activity reference
@@ -399,6 +405,8 @@ class MainActivity : AppCompatActivity() {
             .apiHost("https://privacy-center.yourhost.com")
             .propertyId("FDS-A0B1C2")
             .ipLocation(true)
+            .consentFlagType(ConsentFlagType.BOOLEAN)
+            .consentNonApplicableFlagMode(ConsentNonApplicableFlagMode.OMIT)
             .build()
             
         Janus.initialize(this, config) { success, error ->
@@ -488,6 +496,8 @@ val config = JanusConfiguration.Builder()
     .apiHost("https://privacy-plus.yourhost.com")
     // Other parameters...
     .autoShowExperience(false) // Prevent automatic display
+    .consentFlagType(ConsentFlagType.BOOLEAN)
+    .consentNonApplicableFlagMode(ConsentNonApplicableFlagMode.OMIT)
     .build()
 
 // Initialize Janus without showing the privacy experience immediately

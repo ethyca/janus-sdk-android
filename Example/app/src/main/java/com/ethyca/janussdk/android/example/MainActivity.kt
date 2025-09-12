@@ -9,6 +9,8 @@ import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.widget.doOnTextChanged
 import com.ethyca.janussdk.android.example.databinding.ActivityMainBinding
+import com.ethyca.janussdk.android.models.ConsentFlagType
+import com.ethyca.janussdk.android.models.ConsentNonApplicableFlagMode
 
 class MainActivity : AppCompatActivity() {
 
@@ -26,6 +28,12 @@ class MainActivity : AppCompatActivity() {
         
         // Setup configuration type spinner
         setupConfigSpinner()
+        
+        // Setup consent flag type spinner
+        setupConsentFlagTypeSpinner()
+        
+        // Setup consent non-applicable flag mode spinner
+        setupConsentNonApplicableFlagModeSpinner()
         
         // Setup input fields
         setupInputFields()
@@ -46,6 +54,52 @@ class MainActivity : AppCompatActivity() {
                 currentConfig = JanusConfig.forType(selectedType, this@MainActivity)
                 updateInputFields()
                 updateInputFieldsEnabled()
+            }
+            
+            override fun onNothingSelected(parent: AdapterView<*>) {
+                // Do nothing
+            }
+        }
+    }
+    
+    private fun setupConsentFlagTypeSpinner() {
+        val consentFlagTypes = ConsentFlagType.values().map { flagType ->
+            when (flagType) {
+                ConsentFlagType.BOOLEAN -> "Boolean"
+                ConsentFlagType.CONSENT_MECHANISM -> "Consent Mechanism"
+            }
+        }
+        val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, consentFlagTypes)
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        
+        binding.consentFlagTypeSpinner.adapter = adapter
+        binding.consentFlagTypeSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: AdapterView<*>, view: View?, position: Int, id: Long) {
+                val selectedFlagType = ConsentFlagType.values()[position]
+                currentConfig.consentFlagType = selectedFlagType
+            }
+            
+            override fun onNothingSelected(parent: AdapterView<*>) {
+                // Do nothing
+            }
+        }
+    }
+    
+    private fun setupConsentNonApplicableFlagModeSpinner() {
+        val consentNonApplicableFlagModes = ConsentNonApplicableFlagMode.values().map { flagMode ->
+            when (flagMode) {
+                ConsentNonApplicableFlagMode.OMIT -> "Omit"
+                ConsentNonApplicableFlagMode.INCLUDE -> "Include"
+            }
+        }
+        val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, consentNonApplicableFlagModes)
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        
+        binding.consentNonApplicableFlagModeSpinner.adapter = adapter
+        binding.consentNonApplicableFlagModeSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: AdapterView<*>, view: View?, position: Int, id: Long) {
+                val selectedFlagMode = ConsentNonApplicableFlagMode.values()[position]
+                currentConfig.consentNonApplicableFlagMode = selectedFlagMode
             }
             
             override fun onNothingSelected(parent: AdapterView<*>) {
@@ -101,6 +155,18 @@ class MainActivity : AppCompatActivity() {
         binding.propertyIdInput.setText(currentConfig.propertyId ?: "")
         binding.regionInput.setText(currentConfig.region ?: "")
         binding.autoShowExperienceSwitch.isChecked = currentConfig.autoShowExperience
+        
+        // Set consent flag type spinner selection
+        val consentFlagTypeIndex = ConsentFlagType.values().indexOf(currentConfig.consentFlagType)
+        if (consentFlagTypeIndex >= 0) {
+            binding.consentFlagTypeSpinner.setSelection(consentFlagTypeIndex)
+        }
+        
+        // Set consent non-applicable flag mode spinner selection
+        val consentNonApplicableFlagModeIndex = ConsentNonApplicableFlagMode.values().indexOf(currentConfig.consentNonApplicableFlagMode)
+        if (consentNonApplicableFlagModeIndex >= 0) {
+            binding.consentNonApplicableFlagModeSpinner.setSelection(consentNonApplicableFlagModeIndex)
+        }
     }
     
     private fun updateInputFieldsEnabled() {

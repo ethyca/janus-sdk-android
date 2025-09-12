@@ -48,6 +48,17 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".FullExampleActivity" />
         </activity>
+        
+        <activity
+            android:name=".EventDetailActivity"
+            android:exported="false"
+            android:label="Event Details"
+            android:parentActivityName=".FullExampleActivity"
+            android:theme="@style/Theme.JanusSDKExample">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".FullExampleActivity" />
+        </activity>
     </application>
 
 </manifest>

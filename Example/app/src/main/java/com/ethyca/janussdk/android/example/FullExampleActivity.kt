@@ -28,6 +28,7 @@ class FullExampleActivity : AppCompatActivity() {
     private lateinit var binding: ActivityFullExampleBinding
     private val janusManager: JanusManager = JanusManager.getInstance()
     private lateinit var consentValueAdapter: ConsentValueAdapter
+    private lateinit var eventAdapter: EventAdapter
     private val dateFormat = SimpleDateFormat("MM/dd/yyyy, h:mm a", Locale.US)
 
     // Add these variables for WebView management
@@ -69,6 +70,22 @@ class FullExampleActivity : AppCompatActivity() {
         binding.consentValuesRecyclerView.apply {
             layoutManager = LinearLayoutManager(this@FullExampleActivity)
             adapter = consentValueAdapter
+        }
+
+        // Setup RecyclerView for events
+        eventAdapter = EventAdapter { eventItem ->
+            // Handle event click - open EventDetailActivity
+            val intent = EventDetailActivity.createIntent(
+                this@FullExampleActivity,
+                eventItem.eventType,
+                eventItem.eventDetail,
+                eventItem.timestamp
+            )
+            startActivity(intent)
+        }
+        binding.eventsRecyclerView.apply {
+            layoutManager = LinearLayoutManager(this@FullExampleActivity)
+            adapter = eventAdapter
         }
 
         // Setup show experience button
@@ -229,8 +246,8 @@ class FullExampleActivity : AppCompatActivity() {
         // Observe events
         janusManager.events.observe(this) { events ->
             binding.noEventsText.visibility = if (events.isEmpty()) View.VISIBLE else View.GONE
-            binding.eventsTextView.visibility = if (events.isEmpty()) View.GONE else View.VISIBLE
-            binding.eventsTextView.text = events.joinToString("\n\n")
+            binding.eventsRecyclerView.visibility = if (events.isEmpty()) View.GONE else View.VISIBLE
+            eventAdapter.updateEvents(events)
         }
 
         // Observe consent values
