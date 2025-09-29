@@ -18,7 +18,8 @@ import java.util.concurrent.TimeUnit
 class HTTPLogger(
     private val endpoint: String,
     private val authToken: String,
-    private val source: String = "AndroidExampleApp"
+    private val source: String = "AndroidExampleApp",
+    private val enableConsoleErrors: Boolean = false
 ) : JanusLogger {
     
     private val client: OkHttpClient = OkHttpClient.Builder()
@@ -102,23 +103,29 @@ class HTTPLogger(
             
             client.newCall(request).enqueue(object : Callback {
                 override fun onFailure(call: Call, e: IOException) {
-                    Log.e("HTTPLogger", "Network error: ${e.message}")
+                    if (enableConsoleErrors) {
+                        Log.e("HTTPLogger", "Network error: ${e.message}")
+                    }
                 }
                 
                 override fun onResponse(call: Call, response: Response) {
                     response.use {
                         if (!response.isSuccessful) {
-                            Log.e("HTTPLogger", "HTTP error - Status code: ${response.code}")
-                            response.body?.string()?.let { responseBody ->
-                                Log.e("HTTPLogger", "Response body: $responseBody")
+                            if (enableConsoleErrors) {
+                                Log.e("HTTPLogger", "HTTP error - Status code: ${response.code}")
+                                response.body?.string()?.let { responseBody ->
+                                    Log.e("HTTPLogger", "Response body: $responseBody")
+                                }
                             }
                         }
                     }
                 }
             })
         } catch (e: Exception) {
-            Log.e("HTTPLogger", "Failed to serialize log data: ${e.message}")
-            Log.e("HTTPLogger", "Log data that failed: $logData")
+            if (enableConsoleErrors) {
+                Log.e("HTTPLogger", "Failed to serialize log data: ${e.message}")
+                Log.e("HTTPLogger", "Log data that failed: $logData")
+            }
         }
     }
 } 
