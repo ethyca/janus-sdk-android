@@ -160,6 +160,36 @@
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        android:layout_marginBottom="8dp"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="Is TCF Experience:"
+                            android:textAppearance="@style/TextAppearance.MaterialComponents.Body2" />
+
+                        <ProgressBar
+                            android:id="@+id/isTCFExperienceProgressBar"
+                            android:layout_width="16dp"
+                            android:layout_height="16dp"
+                            android:layout_marginEnd="8dp"
+                            android:visibility="gone" />
+
+                        <TextView
+                            android:id="@+id/isTCFExperienceValueText"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="No"
+                            android:textAppearance="@style/TextAppearance.MaterialComponents.Body2"
+                            android:textStyle="bold" />
+
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
                         android:orientation="horizontal"
                         android:layout_marginBottom="8dp"
                         android:gravity="center_vertical">

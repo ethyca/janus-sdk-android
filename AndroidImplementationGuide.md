@@ -17,7 +17,7 @@ Add the JanusSDK dependency to your app's `build.gradle.kts` file:
 
 ```kotlin
 dependencies {
-    implementation("com.ethyca.janussdk:android:1.0.21")
+    implementation("com.ethyca.janussdk:android:1.0.22")
 }
 ```
 
@@ -25,7 +25,7 @@ If you are using a `libs.versions.toml` file, add the following entry:
 
 ```toml
 [libraries]
-janus-sdk = { module = "com.ethyca.janussdk:android", version = "1.0.21" }
+janus-sdk = { module = "com.ethyca.janussdk:android", version = "1.0.22" }
 ```
 
 Then in your `build.gradle.kts`:
@@ -40,7 +40,7 @@ dependencies {
 
 ```groovy
 dependencies {
-    implementation 'com.ethyca.janussdk:android:1.0.21'
+    implementation 'com.ethyca.janussdk:android:1.0.22'
 }
 ```
 
@@ -513,5 +513,22 @@ Janus.initialize(activity, config) { success, error ->
             }, 2000) // 2-second delay example
         }
     }
+}
+```
+
+### TCF Experience Detection
+
+The Janus SDK provides a property to check if the current privacy experience is a TCF (Transparency and Consent Framework) experience:
+
+```kotlin
+// Check if the current experience is a TCF experience
+val isTCF = Janus.isTCFExperience
+
+if (isTCF) {
+    // Handle TCF-specific logic
+    Log.d("Janus", "This is a TCF experience")
+} else {
+    // Handle non-TCF experience
+    Log.d("Janus", "This is a standard privacy experience")
 }
 ```

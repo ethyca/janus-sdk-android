@@ -171,6 +171,7 @@ class FullExampleActivity : AppCompatActivity() {
                 binding.statusProgressBar.visibility = View.VISIBLE
                 binding.hasExperienceProgressBar.visibility = View.VISIBLE
                 binding.shouldShowExperienceProgressBar.visibility = View.VISIBLE
+                binding.isTCFExperienceProgressBar.visibility = View.VISIBLE
                 
                 binding.statusValueText.text = "Initializing..."
                 binding.statusValueText.setTextColor(
@@ -184,11 +185,16 @@ class FullExampleActivity : AppCompatActivity() {
                 binding.shouldShowExperienceValueText.setTextColor(
                     ContextCompat.getColor(this, R.color.status_loading)
                 )
+                binding.isTCFExperienceValueText.text = "Loading..."
+                binding.isTCFExperienceValueText.setTextColor(
+                    ContextCompat.getColor(this, R.color.status_loading)
+                )
             } else {
                 // Hide progress bars
                 binding.statusProgressBar.visibility = View.GONE
                 binding.hasExperienceProgressBar.visibility = View.GONE
                 binding.shouldShowExperienceProgressBar.visibility = View.GONE
+                binding.isTCFExperienceProgressBar.visibility = View.GONE
                 
                 // Update with final status when initialization completes
                 val isInitialized = janusManager.isInitialized.value ?: false
@@ -199,6 +205,10 @@ class FullExampleActivity : AppCompatActivity() {
                 
                 val shouldShowExperience = janusManager.shouldShowExperience.value ?: false
                 updateStatusText(binding.shouldShowExperienceValueText, shouldShowExperience, "Yes ✅", "No ❌")
+                
+                // Update TCF experience status
+                val isTCFExperience = Janus.isTCFExperience
+                updateStatusText(binding.isTCFExperienceValueText, isTCFExperience, "Yes ✅", "No ❌")
             }
         }
 
@@ -230,6 +240,16 @@ class FullExampleActivity : AppCompatActivity() {
             val isCurrentlyInitializing = janusManager.isInitializing.value ?: false
             if (!isCurrentlyInitializing) {
                 updateStatusText(binding.shouldShowExperienceValueText, shouldShowExperience, "Yes ✅", "No ❌")
+            }
+        }
+
+        // Observe TCF experience status
+        janusManager.hasExperience.observe(this) { hasExperience ->
+            // Only update if not currently initializing
+            val isCurrentlyInitializing = janusManager.isInitializing.value ?: false
+            if (!isCurrentlyInitializing) {
+                val isTCFExperience = Janus.isTCFExperience
+                updateStatusText(binding.isTCFExperienceValueText, isTCFExperience, "Yes ✅", "No ❌")
             }
         }
 
