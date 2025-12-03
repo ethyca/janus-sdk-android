@@ -17,7 +17,7 @@ Add the JanusSDK dependency to your app's `build.gradle.kts` file:
 
 ```kotlin
 dependencies {
-    implementation("com.ethyca.janussdk:android:1.0.22")
+    implementation("com.ethyca.janussdk:android:1.0.23")
 }
 ```
 
@@ -25,7 +25,7 @@ If you are using a `libs.versions.toml` file, add the following entry:
 
 ```toml
 [libraries]
-janus-sdk = { module = "com.ethyca.janussdk:android", version = "1.0.22" }
+janus-sdk = { module = "com.ethyca.janussdk:android", version = "1.0.23" }
 ```
 
 Then in your `build.gradle.kts`:
@@ -40,7 +40,7 @@ dependencies {
 
 ```groovy
 dependencies {
-    implementation 'com.ethyca.janussdk:android:1.0.22'
+    implementation 'com.ethyca.janussdk:android:1.0.23'
 }
 ```
 
@@ -271,7 +271,9 @@ val analyticsConsent = Janus.consent["analytics"] ?: false
 // Get all the user's consent choices
 val consent = Janus.consent
 
-// Get Fides string (List of IAB strings like CPzHq4APzHq4AAMABBENAUEAALAAAEOAAAAAAEAEACACAAAA,1~61.70)
+// Get Fides string in format TC_STRING,AC_STRING,GPP_STRING,NC_STRING
+// TC_STRING: IAB TCF string, AC_STRING: Google Additional Consent, 
+// GPP_STRING: IAB GPP string, NC_STRING: Base64 Notice Consent preferences
 val fidesString = Janus.fidesString
 ```
 

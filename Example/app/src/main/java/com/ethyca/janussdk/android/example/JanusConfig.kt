@@ -1,7 +1,6 @@
 package com.ethyca.janussdk.android.example
 
 import android.content.Context
-import android.content.SharedPreferences
 import com.ethyca.janussdk.android.models.ConsentFlagType
 import com.ethyca.janussdk.android.models.ConsentNonApplicableFlagMode
 
