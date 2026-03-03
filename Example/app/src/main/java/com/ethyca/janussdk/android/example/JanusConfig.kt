@@ -11,6 +11,7 @@ enum class ConfigurationType {
     ETHYCA,
     ETHYCA_EMPTY,
     LOCAL_SLIM,
+    LOCAL_PROXY,  // Uses tunnel to expose local dev via public URLs
     LOCAL_DEMO,
     COOKIE_HOUSE,
     COOKIE_HOUSE_NIGHTLY,
@@ -69,6 +70,18 @@ data class JanusConfig(
                         website = "http://10.0.2.2:3001",
                         propertyId = null,
                         region = null,
+                        autoShowExperience = true,
+                        consentFlagType = ConsentFlagType.BOOLEAN,
+                        consentNonApplicableFlagMode = ConsentNonApplicableFlagMode.OMIT
+                    )
+                ConfigurationType.LOCAL_PROXY ->
+                    JanusConfig(
+                        type = ConfigurationType.LOCAL_PROXY,
+                        apiHost = "https://ethyca.braverobot.net",
+                        privacyCenterHost = "https://privacy.braverobot.net",
+                        website = "https://privacy.braverobot.net",
+                        propertyId = "FDS-C33DQM",
+                        region = "DE",
                         autoShowExperience = true,
                         consentFlagType = ConsentFlagType.BOOLEAN,
                         consentNonApplicableFlagMode = ConsentNonApplicableFlagMode.OMIT
