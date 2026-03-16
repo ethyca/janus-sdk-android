@@ -3,6 +3,7 @@ package com.ethyca.janussdk.android.example
 import android.content.Context
 import android.content.Intent
 import android.graphics.Color
+import android.graphics.Typeface
 import android.os.Bundle
 import android.view.MenuItem
 import android.view.View
@@ -11,6 +12,7 @@ import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.widget.Button
 import android.widget.FrameLayout
+import android.widget.LinearLayout
 import android.widget.ProgressBar
 import android.widget.Switch
 import android.widget.TextView
@@ -19,6 +21,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.ethyca.janussdk.android.Janus
+import com.ethyca.janussdk.android.consent.IABTCFStorage
 import java.text.SimpleDateFormat
 import java.util.*
 import com.ethyca.janussdk.android.example.databinding.ActivityFullExampleBinding
@@ -59,6 +62,9 @@ class FullExampleActivity : AppCompatActivity() {
 
         // Initialize WebView controls
         initializeWebViewControls()
+
+        // Initialize IAB TCF inspector
+        initializeIABTCFInspector()
 
         // Observe Janus state
         observeJanusState()
@@ -138,6 +144,94 @@ class FullExampleActivity : AppCompatActivity() {
 
         // Update the background WebView count display
         updateBackgroundWebViewCount()
+    }
+
+    // Use the shared key list from IABTCFStorage (per IAB TCF v2.2 Mobile Specification)
+    private val iabTCFKeys = IABTCFStorage.ALL_IABTCF_KEYS
+
+    private fun initializeIABTCFInspector() {
+        // Set up refresh button
+        binding.refreshIABTCFButton.setOnClickListener {
+            refreshIABTCFValues()
+        }
+
+        // Initial load
+        refreshIABTCFValues()
+    }
+
+    private fun refreshIABTCFValues() {
+        // Use the default SharedPreferences file ({packageName}_preferences)
+        val sharedPreferences = getSharedPreferences("${packageName}_preferences", Context.MODE_PRIVATE)
+        val container = binding.iabTCFValuesContainer
+        val noValuesText = binding.noIABTCFValuesText
+
+        // Clear existing views
+        container.removeAllViews()
+
+        // Collect values
+        val values = mutableMapOf<String, String>()
+        for (key in iabTCFKeys) {
+            val value = sharedPreferences.all[key]
+            if (value != null) {
+                values[key] = formatIABTCFValue(value)
+            }
+        }
+
+        if (values.isEmpty()) {
+            noValuesText.visibility = View.VISIBLE
+            container.visibility = View.GONE
+        } else {
+            noValuesText.visibility = View.GONE
+            container.visibility = View.VISIBLE
+
+            // Add a row for each value
+            for ((key, value) in values) {
+                val row = LinearLayout(this).apply {
+                    orientation = LinearLayout.HORIZONTAL
+                    layoutParams = LinearLayout.LayoutParams(
+                        LinearLayout.LayoutParams.MATCH_PARENT,
+                        LinearLayout.LayoutParams.WRAP_CONTENT
+                    ).apply {
+                        bottomMargin = 8
+                    }
+                }
+
+                val keyText = TextView(this).apply {
+                    text = key.replace("IABTCF_", "")
+                    setTextAppearance(com.google.android.material.R.style.TextAppearance_MaterialComponents_Body2)
+                    setTextColor(ContextCompat.getColor(context, android.R.color.darker_gray))
+                    layoutParams = LinearLayout.LayoutParams(
+                        0,
+                        LinearLayout.LayoutParams.WRAP_CONTENT,
+                        1f
+                    )
+                }
+
+                val valueText = TextView(this).apply {
+                    text = value
+                    setTextAppearance(com.google.android.material.R.style.TextAppearance_MaterialComponents_Body2)
+                    typeface = Typeface.MONOSPACE
+                    maxLines = 2
+                    layoutParams = LinearLayout.LayoutParams(
+                        0,
+                        LinearLayout.LayoutParams.WRAP_CONTENT,
+                        1.5f
+                    )
+                }
+
+                row.addView(keyText)
+                row.addView(valueText)
+                container.addView(row)
+            }
+        }
+    }
+
+    private fun formatIABTCFValue(value: Any): String {
+        return when (value) {
+            is Int -> value.toString()
+            is String -> if (value.length > 40) value.take(37) + "..." else value
+            else -> value.toString()
+        }
     }
 
     private fun observeJanusState() {
