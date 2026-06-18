@@ -17,7 +17,7 @@ Add the JanusSDK dependency to your app's `build.gradle.kts` file:
 
 ```kotlin
 dependencies {
-    implementation("com.ethyca.janussdk:android:1.0.27")
+    implementation("com.ethyca.janussdk:android:1.0.28")
 }
 ```
 
@@ -25,7 +25,7 @@ If you are using a `libs.versions.toml` file, add the following entry:
 
 ```toml
 [libraries]
-janus-sdk = { module = "com.ethyca.janussdk:android", version = "1.0.27" }
+janus-sdk = { module = "com.ethyca.janussdk:android", version = "1.0.28" }
 ```
 
 Then in your `build.gradle.kts`:
@@ -40,7 +40,7 @@ dependencies {
 
 ```groovy
 dependencies {
-    implementation 'com.ethyca.janussdk:android:1.0.27'
+    implementation 'com.ethyca.janussdk:android:1.0.28'
 }
 ```
 
@@ -277,6 +277,42 @@ val consent = Janus.consent
 val fidesString = Janus.fidesString
 ```
 
+### Programmatic Consent Updates
+
+Use `setConsent()` to write consent values directly to the SDK from native code — without showing the privacy experience UI. This is intended for two scenarios:
+
+1. **Bidirectional WebView sync** — your app hosts a FidesJS page in a custom `WebView` and needs to push web-originated consent into native storage via a JS bridge.
+2. **Legacy consent migration** — users already consented through an older flow; pre-populate the SDK before the experience initializes so they aren't re-prompted.
+
+```kotlin
+// Minimal call — local persist only, no server sync
+Janus.setConsent(values = mapOf("analytics" to true, "marketing" to false))
+
+// With a fides string (e.g. from a FidesJS FidesUpdated event)
+Janus.setConsent(
+    values = mapOf("analytics" to true),
+    fidesString = "CPz4OMAP...",
+    consentMethod = ConsentMethod.FIDES_JS_UPDATE
+)
+
+// With server sync — requires an experience to be loaded
+// Silently no-ops the network call if no experience is available
+Janus.setConsent(
+    values = mapOf("analytics" to true),
+    consentMethod = ConsentMethod.SAVE,
+    saveToFides = true
+)
+```
+
+A `JanusEvent` (`EXPERIENCE_SELECTION_UPDATED`) is fired to all registered listeners after consent is written, identical to the event fired when a user submits the privacy experience UI.
+
+`clearConsent()` resets all stored consent values and optionally clears metadata timestamps:
+
+```kotlin
+Janus.clearConsent()                       // clear values, keep timestamps
+Janus.clearConsent(clearMetadata = true)   // clear everything
+```
+
 ### Region Detection and Access
 
 JanusSDK provides methods to work directly with region detection and access the current region:
@@ -356,6 +392,20 @@ webView.webViewClient = object : WebViewClient() {
     }
 }
 ```
+
+#### Bidirectional Consent Sync & Loop Prevention
+
+Janus WebViews are **bidirectional**: consent changes flow both ways between native storage and any FidesJS-powered page.
+
+- **Native → Web**: When consent changes in native code (via the privacy experience, `clearConsent()`, or `setConsent()`), Janus injects an `UpdateConsent` message into all managed WebViews so FidesJS reflects the new state.
+- **Web → Native**: When a user interacts with a FidesJS UI inside a managed WebView, the JS bridge (`window.JanusSDKBridge`) forwards the consent values back to native storage and fires a `JanusEvent` to all registered listeners.
+
+**How loops are prevented:**
+
+1. **Source exclusion** — When a consent update originates *from* a WebView, Janus propagates the change to all *other* managed WebViews but skips the source WebView. Programmatic calls (e.g. `setConsent()`) have no source WebView and propagate to all.
+2. **FidesJS idempotency** — FidesJS does not re-dispatch a `FidesUpdated` event when the incoming consent values are identical to the current state. This prevents an echo from triggering a second round-trip back to native.
+
+These two layers work together so that a WebView-initiated consent change does not bounce indefinitely between FidesJS and native code.
 
 ### Jetpack Compose Integration
 

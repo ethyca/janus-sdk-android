@@ -75,6 +75,17 @@ class JanusManager : ViewModel() {
     // Event log
     private val _events = MutableLiveData<List<EventItem>>(emptyList())
     val events: LiveData<List<EventItem>> = _events
+
+    // setConsent echo counter — counts ConsentUpdatedFromWebView events after a programmatic
+    // setConsent() call to detect multi-WebView bounce loops.
+    private val _setConsentEchoCount = MutableLiveData<Int>(0)
+    val setConsentEchoCount: LiveData<Int> = _setConsentEchoCount
+    private var setConsentCallTimestamp: Long? = null
+
+    fun trackSetConsentCall() {
+        setConsentCallTimestamp = System.currentTimeMillis()
+        _setConsentEchoCount.value = 0
+    }
     
     // Configuration
     private var currentConfig: JanusConfig? = null
@@ -228,11 +239,19 @@ class JanusManager : ViewModel() {
             // Use main thread for LiveData updates
             mainHandler.post {
                 _events.value = currentEvents + eventItem
-                
+
                 // Refresh consent values for specific events
-                if (event.eventType == JanusEventType.CONSENT_UPDATED_FROM_WEBVIEW || 
+                if (event.eventType == JanusEventType.CONSENT_UPDATED_FROM_WEBVIEW ||
                     event.eventType == JanusEventType.EXPERIENCE_SELECTION_UPDATED) {
                     refreshConsentValues()
+                }
+                // Count WebView echo events arriving within 10s of a programmatic setConsent() call.
+                // A counter > 1 indicates a multi-WebView bounce loop.
+                if (event.eventType == JanusEventType.CONSENT_UPDATED_FROM_WEBVIEW) {
+                    val callTime = setConsentCallTimestamp
+                    if (callTime != null && System.currentTimeMillis() - callTime < 10_000) {
+                        _setConsentEchoCount.value = (_setConsentEchoCount.value ?: 0) + 1
+                    }
                 }
             }
         }

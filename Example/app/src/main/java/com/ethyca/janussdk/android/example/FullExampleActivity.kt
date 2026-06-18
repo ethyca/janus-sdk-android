@@ -144,6 +144,16 @@ class FullExampleActivity : AppCompatActivity() {
 
         // Update the background WebView count display
         updateBackgroundWebViewCount()
+
+        // setConsent Test controls
+        binding.setConsentButton.setOnClickListener {
+            janusManager.trackSetConsentCall()
+            Janus.setConsent(mapOf("analytics" to binding.analyticsConsentSwitch.isChecked))
+        }
+        binding.setConsentSaveToFidesButton.setOnClickListener {
+            janusManager.trackSetConsentCall()
+            Janus.setConsent(mapOf("analytics" to binding.analyticsConsentSwitch.isChecked), saveToFides = true)
+        }
     }
 
     // Use the shared key list from IABTCFStorage (per IAB TCF v2.2 Mobile Specification)
@@ -388,6 +398,14 @@ class FullExampleActivity : AppCompatActivity() {
         // Observe consent method
         janusManager.consentMethod.observe(this) { consentMethod ->
             binding.consentMethodValueText.text = if (consentMethod.isEmpty()) "Not Set" else consentMethod
+        }
+
+        // Observe setConsent echo count — red when > 1 to flag a possible loop
+        janusManager.setConsentEchoCount.observe(this) { count ->
+            binding.setConsentEchoCountText.text = count.toString()
+            binding.setConsentEchoCountText.setTextColor(
+                ContextCompat.getColor(this, if (count > 1) R.color.status_error else R.color.status_success)
+            )
         }
 
         // Observe consent metadata timestamps
