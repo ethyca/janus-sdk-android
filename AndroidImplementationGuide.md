@@ -17,7 +17,7 @@ Add the JanusSDK dependency to your app's `build.gradle.kts` file:
 
 ```kotlin
 dependencies {
-    implementation("com.ethyca.janussdk:android:1.0.28")
+    implementation("com.ethyca.janussdk:android:1.1.0")
 }
 ```
 
@@ -25,7 +25,7 @@ If you are using a `libs.versions.toml` file, add the following entry:
 
 ```toml
 [libraries]
-janus-sdk = { module = "com.ethyca.janussdk:android", version = "1.0.28" }
+janus-sdk = { module = "com.ethyca.janussdk:android", version = "1.1.0" }
 ```
 
 Then in your `build.gradle.kts`:
@@ -40,7 +40,7 @@ dependencies {
 
 ```groovy
 dependencies {
-    implementation 'com.ethyca.janussdk:android:1.0.28'
+    implementation 'com.ethyca.janussdk:android:1.1.0'
 }
 ```
 
@@ -311,6 +311,20 @@ A `JanusEvent` (`EXPERIENCE_SELECTION_UPDATED`) is fired to all registered liste
 ```kotlin
 Janus.clearConsent()                       // clear values, keep timestamps
 Janus.clearConsent(clearMetadata = true)   // clear everything
+```
+
+### External User ID
+
+Use `setExternalId()` to attach your application's own user identifier (e.g. an Auth0 `sub` or database UUID) to every consent and notices-served request the SDK sends to Fides. Fides stores this on the `BrowserIdentity` of each request, letting it link consent records to a known user — which enables DSR (data subject request) correlation and consent merging across a user's devices.
+
+Call it after the user logs in. Pass `null` to clear the identifier on logout. The value is held in memory for the lifetime of the SDK and applied to all *subsequent* API calls; it does not retroactively update records already sent.
+
+```kotlin
+// After login — associate consent with your app's user ID
+Janus.setExternalId("auth0|abc123")
+
+// On logout — stop associating consent with the user
+Janus.setExternalId(null)
 ```
 
 ### Region Detection and Access
