@@ -17,7 +17,7 @@ Add the JanusSDK dependency to your app's `build.gradle.kts` file:
 
 ```kotlin
 dependencies {
-    implementation("com.ethyca.janussdk:android:1.1.0")
+    implementation("com.ethyca.janussdk:android:1.2.0")
 }
 ```
 
@@ -25,7 +25,7 @@ If you are using a `libs.versions.toml` file, add the following entry:
 
 ```toml
 [libraries]
-janus-sdk = { module = "com.ethyca.janussdk:android", version = "1.1.0" }
+janus-sdk = { module = "com.ethyca.janussdk:android", version = "1.2.0" }
 ```
 
 Then in your `build.gradle.kts`:
@@ -40,7 +40,7 @@ dependencies {
 
 ```groovy
 dependencies {
-    implementation 'com.ethyca.janussdk:android:1.1.0'
+    implementation 'com.ethyca.janussdk:android:1.2.0'
 }
 ```
 
@@ -219,6 +219,7 @@ val config = JanusConfiguration.Builder()
     .saveNoticesServedToFides(true)                           // 💾 Save notices served to Fides via notices-served API (default true)
     .consentFlagType(ConsentFlagType.BOOLEAN)                 // 🎯 Format for consent values (default boolean)
     .consentNonApplicableFlagMode(ConsentNonApplicableFlagMode.OMIT)  // 🔄 Handle non-applicable notices (default omit)
+    .enableBannerMode(true)                                   // 🪧 Show banner_and_modal experiences as a compact banner first (default false)
     .build()
 
 // Initialize with an Activity reference
@@ -282,7 +283,7 @@ val fidesString = Janus.fidesString
 Use `setConsent()` to write consent values directly to the SDK from native code — without showing the privacy experience UI. This is intended for two scenarios:
 
 1. **Bidirectional WebView sync** — your app hosts a FidesJS page in a custom `WebView` and needs to push web-originated consent into native storage via a JS bridge.
-2. **Legacy consent migration** — users already consented through an older flow; pre-populate the SDK before the experience initializes so they aren't re-prompted.
+2. **Legacy consent migration** — users already consented through an older flow; carry their choice into the SDK so they aren't re-prompted. Call `setConsent()` after `initialize` completes and before the experience shows, with `autoShowExperience` turned off. `setConsent()` only saves to Fides when an experience is loaded, so a call made before then stores consent on the device and never sends it to Fides. Pass the external provider consent method so Fides records the consent as carried over.
 
 ```kotlin
 // Minimal call — local persist only, no server sync
@@ -300,6 +301,14 @@ Janus.setConsent(
 Janus.setConsent(
     values = mapOf("analytics" to true),
     consentMethod = ConsentMethod.SAVE,
+    saveToFides = true
+)
+
+// Migrating consent recorded before Janus. Call after initialize completes: the Fides save needs a loaded experience
+// The method lets Fides tell it apart from a choice made in the experience
+Janus.setConsent(
+    values = mapOf("data_sales_and_sharing" to false),
+    consentMethod = ConsentMethod.EXTERNAL_PROVIDER,
     saveToFides = true
 )
 ```
@@ -581,6 +590,28 @@ Janus.initialize(activity, config) { success, error ->
     }
 }
 ```
+
+### Banner Mode
+
+By default, Janus shows every non-TCF experience as a full-screen modal. Call `.enableBannerMode(true)` on the builder (or set `enableBannerMode = true` in the DSL) to show `banner_and_modal` experiences as a compact banner first, matching the layered banner on the web. The banner offers Reject All, Accept All, and a Manage preferences button that opens the full modal.
+
+```kotlin
+val config = JanusConfiguration.Builder()
+    .apiHost("https://privacy-plus.yourhost.com")
+    .propertyId("FDS-A0B1C2")
+    .enableBannerMode(true)
+    .build()
+```
+
+When banner mode is on:
+
+1. **The banner appears only while consent is still needed**, i.e. when `shouldShowExperience` is true. Once the user has made a choice, `showExperience` opens the full modal directly, so a "Privacy settings" link in your app skips the banner. Dismissing the banner (close button or back) saves each notice's default as implied consent (consent method `dismiss`) when the user has no saved consent yet. Implied consent doesn't count as a choice, so the banner resurfaces on the next `showExperience`, as it does on the web.
+2. **Text and labels come from the experience config.** The banner uses `banner_title` and `banner_description`, falling back to `title` and `description`, and the button labels from the same translation.
+3. **`layer1_button_options` picks the buttons.** `acknowledge`, or an experience whose notices are all notice-only, shows a single Acknowledge button. `opt_in_opt_out` and `gpc_conditional` show Reject All and Accept All (apps have no GPC signal).
+4. **Notices served are recorded with `serving_component: banner`**, and the modal opened from the banner records `modal`.
+5. **Back and close dismiss only when the experience is dismissable.** A non-dismissable banner stays until the user makes a choice.
+
+Other component types, including `modal` and TCF experiences, are unaffected by this flag.
 
 ### TCF Experience Detection
 
