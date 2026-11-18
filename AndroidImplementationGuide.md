@@ -17,7 +17,7 @@ Add the JanusSDK dependency to your app's `build.gradle.kts` file:
 
 ```kotlin
 dependencies {
-    implementation("com.ethyca.janussdk:android:1.3.0")
+    implementation("com.ethyca.janussdk:android:1.4.0")
 }
 ```
 
@@ -25,7 +25,7 @@ If you are using a `libs.versions.toml` file, add the following entry:
 
 ```toml
 [libraries]
-janus-sdk = { module = "com.ethyca.janussdk:android", version = "1.3.0" }
+janus-sdk = { module = "com.ethyca.janussdk:android", version = "1.4.0" }
 ```
 
 Then in your `build.gradle.kts`:
@@ -40,7 +40,7 @@ dependencies {
 
 ```groovy
 dependencies {
-    implementation 'com.ethyca.janussdk:android:1.3.0'
+    implementation 'com.ethyca.janussdk:android:1.4.0'
 }
 ```
 
@@ -220,6 +220,8 @@ val config = JanusConfiguration.Builder()
     .consentFlagType(ConsentFlagType.BOOLEAN)                 // 🎯 Format for consent values (default boolean)
     .consentNonApplicableFlagMode(ConsentNonApplicableFlagMode.OMIT)  // 🔄 Handle non-applicable notices (default omit)
     .enableBannerMode(true)                                   // 🪧 Show banner_and_modal experiences as a compact banner first (default false)
+    .enableAgeSignal(false)                                   // 🧒 Read the age bracket from Google Play Age Signals during init (default false)
+    .ageBracket(null)                                         // 🧒 Age bracket your app already knows; wins over Play Age Signals (default null)
     .build()
 
 // Initialize with an Activity reference
@@ -425,7 +427,7 @@ Janus WebViews are **bidirectional**: consent changes flow both ways between nat
 
 **How loops are prevented:**
 
-1. **Source exclusion** — When a consent update originates *from* a WebView, Janus propagates the change to all *other* managed WebViews but skips the source WebView. Programmatic calls (e.g. `setConsent()`) have no source WebView and propagate to all.
+1. **Source exclusion** — When a consent update originates *from* a WebView, Janus propagates the change to all *other* managed WebViews but skips the source WebView. Programmatic calls (e.g. `setConsent()`) have no source WebView and propagate to all. The exception is a save the minor age signal turned back: Janus then sends its values to every managed WebView, the source included, and the bridge ignores the `FidesUpdated` events these Janus-sourced updates cause.
 2. **FidesJS idempotency** — FidesJS does not re-dispatch a `FidesUpdated` event when the incoming consent values are identical to the current state. This prevents an echo from triggering a second round-trip back to native.
 
 These two layers work together so that a WebView-initiated consent change does not bounce indefinitely between FidesJS and native code.
@@ -612,6 +614,108 @@ When banner mode is on:
 5. **Back and close dismiss only when the experience is dismissable.** A non-dismissable banner stays until the user makes a choice.
 
 Other component types, including `modal` and TCF experiences, are unaffected by this flag.
+
+### Minor Age Signal
+
+App store age laws (California's AB 1043 from 2027, plus Texas, Utah, and Louisiana) send each app an age bracket for its user. Once an app has that signal, the CCPA treats it as knowing the user's age, so it must not sell or share a minor's data for targeted ads without opt-in. Janus can apply this for you: when the user is under 16, it opts every targeted-ads notice out before it shows an experience or reports consent.
+
+Janus treats a notice as a targeted-ads notice when it has the GPC flag (`has_gpc_flag`) and is not notice-only. You choose these notices through your existing notice configuration.
+
+#### Where the bracket comes from
+
+There are two sources:
+
+1. **Google Play Age Signals.** Set `enableAgeSignal(true)`, and Janus asks Play for the user's age range during `initialize`, before its first auto-show. Play may show its age-sharing prompt. Janus waits up to 5 seconds. If Play fails, times out, the user declines to share, or the library is missing, the bracket is `unknown` and initialization completes normally. If Play's answer arrives after the 5 seconds, Janus still applies it for this launch. If the Activity you pass to `initialize` is finishing, Janus asks from the next resumed Activity instead, and a failed request is retried once from the next resumed Activity.
+2. **Your app.** If you already know the user's age range, pass `ageBracket` at init, or call `Janus.setAgeSignal()` when it arrives later. A bracket from your app wins over the Play result, except `UNKNOWN`, which defers to Play. When your app passes a known bracket before `initialize`, Janus doesn't ask Play at all, so the user never sees a prompt whose answer would be ignored. If your app later calls `setAgeSignal(AgeBracket.UNKNOWN)` with `enableAgeSignal` on, Janus asks Play then, from the current resumed Activity, and applies the answer live.
+
+The Play library is an optional dependency, so apps that don't enable the age signal don't pull it in. To use `enableAgeSignal`, add it yourself (it requires `minSdk` 23):
+
+```kotlin
+dependencies {
+    implementation("com.google.android.play:age-signals:0.0.4")
+}
+```
+
+```kotlin
+// Source 1: Janus reads Play Age Signals during initialize
+val config = JanusConfiguration.Builder()
+    .apiHost("https://privacy-plus.yourhost.com")
+    .propertyId("FDS-A0B1C2")
+    .enableAgeSignal(true)
+    .build()
+
+// Source 2: your app already has the bracket
+val config = JanusConfiguration.Builder()
+    .apiHost("https://privacy-plus.yourhost.com")
+    .propertyId("FDS-A0B1C2")
+    .ageBracket(AgeBracket.AGE_13_TO_15)
+    .build()
+
+// Or, for a bracket that arrives after initialize
+Janus.setAgeSignal(AgeBracket.AGE_13_TO_15)
+```
+
+A bracket passed through `setAgeSignal()` after `initialize` can arrive after an experience has already shown. To close that gap, set `autoShowExperience(false)` and call `showExperience()` once you have called `setAgeSignal()`.
+
+Janus maps Play's age range to a bracket with gates at 13 and 16. If you set custom age ranges in the Play Console, a range that spans a gate maps to the youngest bracket it covers.
+
+#### What each bracket does
+
+| Bracket | Auto opt-out | Toggle in the Janus UI | Accept All | Opting back in |
+|---|---|---|---|---|
+| `UNDER_13` | Yes | Locked off (a parent's opt-in can still be turned off) | Skips these notices | Your app records parental consent |
+| `AGE_13_TO_15` | Yes | Unlocked | Skips these notices | The user flips the individual toggle |
+| `AGE_16_TO_17`, `ADULT`, `UNKNOWN` | No | Normal | Normal | n/a |
+
+1. **The opt-out applies once per notice.** The first time a minor bracket meets a notice, Janus turns it off even if it was on, and remembers the notice key on the device. After that, Janus leaves the notice alone, so a 13 to 15 year old's opt-back-in survives relaunch. If the notice later has no stored value at all, Janus turns it off again.
+2. **The signal only ever turns consent off.** When the bracket changes to a non-minor value (for example, the user turns 16), notices unlock and keep their current values.
+3. **Opt-outs are saved to Fides** with consent method `age_signal` when `saveUserPreferencesToFides` is on. An older Fides server that doesn't know `age_signal` or `parental_consent` rejects the save with a 422, so Janus retries it once without a consent method.
+4. **The bracket never leaves the device.** Janus keeps it in memory only. It never stores it, never sends it to Fides, and never writes it to a log.
+
+#### Parental consent for users under 13
+
+An under-13 notice can only be turned on through your app, after your app has verified the parent's consent. Janus clamps every other path, including `setConsent()` with any other method, Accept All, and WebView messages. In a WebView, only the user's own choices in the FidesJS modal (saving it, or a single notice's toggle) can opt a 13 to 15 year old in; Accept All, a dismissed banner, a `fides_string`, the page's own `Fides.updateConsent` call, migrated consent, and GPC cannot, even with an older FidesJS that doesn't know the age signal, while that user's individual choices in the FidesJS modal still save. A parent's opt-in survives later saves, and the child can still turn the notice off.
+
+```kotlin
+Janus.setConsent(
+    values = mapOf("data_sales_and_sharing" to true),
+    consentMethod = ConsentMethod.PARENTAL_CONSENT,
+    saveToFides = true
+)
+```
+
+#### WebViews
+
+Janus passes the bracket to FidesJS as the `fides_age_signal` option in every WebView it manages, including the TCF experience and WebViews created with `createConsentWebView()`. It updates the option live when the bracket changes, and it re-applies the option whenever FidesJS initializes, so the page's own `fides_overrides` cannot replace it.
+
+The bracket reaches FidesJS through `window.fides_overrides`, so any script on the page you load can read it. Don't load third-party scripts, such as ad or analytics tags, that read `fides_overrides` on pages you show in Janus WebViews. Janus keeps the bracket out of embedded frames, but it can't hide it from the page itself.
+
+To set the option before the page's scripts run, add `androidx.webkit` to your app. Janus treats it as an optional dependency:
+
+```kotlin
+dependencies {
+    implementation("androidx.webkit:webkit:1.12.1")
+}
+```
+
+Without it, or on a WebView too old for document-start scripts, Janus sets the option when the page finishes loading and re-initializes FidesJS if FidesJS may have read a different value.
+
+A page's FidesJS saves its own consent to Fides, under the page's own `fides_user_device_id`. When Janus turns back an opt-in from a WebView (for example, one saved by an older FidesJS, or before the page knew the bracket), it also saves that correction to Fides with consent method `age_signal`, under the page's device ID, so the record the page wrote is overwritten. It is sent only when `saveUserPreferencesToFides` is on, from its own retry queue, which never replaces a pending save of your app's own consent. If the page saves again and keeps a notice on that Janus allows (a 13 to 15 year old's own choice), a correction for that notice that hasn't been sent yet is dropped.
+
+#### Your own WebViews
+
+If you show FidesJS in a WebView Janus doesn't manage, pass it the bracket yourself: set `fides_age_signal` in `window.fides_overrides` to `Janus.webViewAgeSignal?.value` before FidesJS loads, and re-initialize FidesJS with the new value on `ageSignalUpdated`. `webViewAgeSignal` is the bracket Janus gives its own WebViews, or `null` while the age signal is off. The event carries no bracket, so forwarding Janus events to analytics doesn't share it.
+
+```kotlin
+val listenerId = Janus.addConsentEventListener { event ->
+    if (event.eventType == JanusEventType.AGE_SIGNAL_UPDATED) {
+        val signal = Janus.webViewAgeSignal?.value  // null: age signal off
+        // Pass `signal` to your page as fides_overrides.fides_age_signal
+    }
+}
+```
+
+When the user presses Back while the TCF experience is saving, Janus waits up to 5 seconds for FidesJS to finish the save before closing, so its correction always reaches Fides after the save it corrects.
 
 ### TCF Experience Detection
 
