@@ -3,13 +3,21 @@
 
 ### Installation
 
-Add the JanusSDK maven repository to your project's `build.gradle.kts` file:
+Add the JanusSDK Maven repository where your project declares its repositories. Projects created by Android Studio declare them in `settings.gradle.kts`, under `dependencyResolutionManagement`, and fail the build if a build file adds one:
 
 ```kotlin
-maven {
-    url = uri("https://ethyca.github.io/janus-sdk-android")
+dependencyResolutionManagement {
+    repositories {
+        google()
+        mavenCentral()
+        maven {
+            url = uri("https://ethyca.github.io/janus-sdk-android")
+        }
+    }
 }
 ```
+
+Older projects that declare repositories in the root `build.gradle.kts` add it under `allprojects { repositories { ... } }` there instead.
 
 #### Gradle (Kotlin DSL)
 
@@ -17,7 +25,7 @@ Add the JanusSDK dependency to your app's `build.gradle.kts` file:
 
 ```kotlin
 dependencies {
-    implementation("com.ethyca.janussdk:android:1.4.1")
+    implementation("com.ethyca.janussdk:android:1.4.2")
 }
 ```
 
@@ -25,7 +33,7 @@ If you are using a `libs.versions.toml` file, add the following entry:
 
 ```toml
 [libraries]
-janus-sdk = { module = "com.ethyca.janussdk:android", version = "1.4.1" }
+janus-sdk = { module = "com.ethyca.janussdk:android", version = "1.4.2" }
 ```
 
 Then in your `build.gradle.kts`:
@@ -40,7 +48,7 @@ dependencies {
 
 ```groovy
 dependencies {
-    implementation 'com.ethyca.janussdk:android:1.4.1'
+    implementation 'com.ethyca.janussdk:android:1.4.2'
 }
 ```
 
@@ -53,15 +61,25 @@ The Janus SDK supports custom logging implementations through the `JanusLogger` 
 ```kotlin
 interface JanusLogger {
     fun log(
-        level: JanusLogLevel,
         message: String,
+        level: LogLevel = LogLevel.INFO,
         metadata: Map<String, String>? = null,
         error: Throwable? = null
     )
 }
 
-enum class JanusLogLevel {
+enum class LogLevel {
     VERBOSE, DEBUG, INFO, WARNING, ERROR
+}
+```
+
+For example:
+
+```kotlin
+class MyCustomJanusLogger : JanusLogger {
+    override fun log(message: String, level: LogLevel, metadata: Map<String, String>?, error: Throwable?) {
+        Log.println(Log.INFO, "Janus", "[$level] $message")
+    }
 }
 ```
 
@@ -619,13 +637,15 @@ Other component types, including `modal` and TCF experiences, are unaffected by 
 
 App store age laws (California's AB 1043 from 2027, plus Texas, Utah, and Louisiana) send each app an age bracket for its user. Once an app has that signal, the CCPA treats it as knowing the user's age, so it must not sell or share a minor's data for targeted ads without opt-in. Janus can apply this for you: when the user is under 16, it opts every targeted-ads notice out before it shows an experience or reports consent.
 
+**Requires Fides 3.3.0 or later.** With an older Fides server, Janus still applies the age signal on the device, but Fides saves its opt-outs without the `age_signal` and `parental_consent` reasons, and the FidesJS in your WebViews doesn't apply the bracket itself (Janus still turns back any opt-in those pages try to save).
+
 Janus treats a notice as a targeted-ads notice when it has the GPC flag (`has_gpc_flag`) and is not notice-only. You choose these notices through your existing notice configuration.
 
 #### Where the bracket comes from
 
 There are two sources:
 
-1. **Google Play Age Signals.** Set `enableAgeSignal(true)`, and Janus asks Play for the user's age range during `initialize`, before its first auto-show. Play may show its age-sharing prompt. Janus waits up to 5 seconds. If Play fails, times out, the user declines to share, or the library is missing, the bracket is `unknown` and initialization completes normally. If Play's answer arrives after the 5 seconds, Janus still applies it for this launch. If the Activity you pass to `initialize` is finishing, Janus asks from the next resumed Activity instead, and a failed request is retried once from the next resumed Activity.
+1. **Google Play Age Signals.** Set `enableAgeSignal(true)`, and Janus asks Play for the user's age range during `initialize`, before its first auto-show. Play may show its age-sharing prompt. Janus waits up to 5 seconds, or, while Play's prompt is on screen, until the user answers it (at most 1 minute). If Play fails, times out, the user declines to share, or the library is missing, the bracket is `unknown` and initialization completes normally. If Play's answer arrives later, Janus still applies it for this launch. If the Activity you pass to `initialize` is finishing, Janus asks from the next resumed Activity instead, and a failed request is retried once from the next resumed Activity.
 2. **Your app.** If you already know the user's age range, pass `ageBracket` at init, or call `Janus.setAgeSignal()` when it arrives later. A bracket from your app wins over the Play result, except `UNKNOWN`, which defers to Play. When your app passes a known bracket before `initialize`, Janus doesn't ask Play at all, so the user never sees a prompt whose answer would be ignored. If your app later calls `setAgeSignal(AgeBracket.UNKNOWN)` with `enableAgeSignal` on, Janus asks Play then, from the current resumed Activity, and applies the answer live.
 
 The Play library is an optional dependency, so apps that don't enable the age signal don't pull it in. To use `enableAgeSignal`, add it yourself (it requires `minSdk` 23):
